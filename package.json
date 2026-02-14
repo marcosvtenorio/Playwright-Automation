@@ -15,7 +15,14 @@
     "docker:api": "docker compose run --rm api-tests",
     "docker:ui": "docker compose run --rm ui-tests"
   },
-  "keywords": ["playwright", "testing", "automation", "typescript", "api-testing", "e2e"],
+  "keywords": [
+    "playwright",
+    "testing",
+    "automation",
+    "typescript",
+    "api-testing",
+    "e2e"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
