@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Build output
+dist/
+
+# Environment
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+!.vscode/settings.json
+.idea/
+
+# Agents skill (local tooling)
+.agents/
+.cursor/
+

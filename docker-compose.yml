@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  playwright:
+    build: .
+    environment:
+      - CI=true
+      - API_BASE_URL=https://restful-booker.herokuapp.com
+      - UI_BASE_URL=https://automationintesting.online
+      - HEADLESS=true
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    command: npx playwright test
+
+  # Run only API tests
+  api-tests:
+    build: .
+    environment:
+      - CI=true
+      - API_BASE_URL=https://restful-booker.herokuapp.com
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    command: npx playwright test --project=api
+
+  # Run only UI tests
+  ui-tests:
+    build: .
+    environment:
+      - CI=true
+      - UI_BASE_URL=https://automationintesting.online
+      - HEADLESS=true
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    command: npx playwright test --project=ui-chromium
+

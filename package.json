@@ -1,0 +1,28 @@
+{
+  "name": "voidr-ai-test-engineer-challenge",
+  "version": "1.0.0",
+  "description": "AI Test Engineer Technical Challenge — Playwright test automation for Restful Booker API and Automation in Testing UI",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test",
+    "test:api": "npx playwright test --project=api",
+    "test:ui": "npx playwright test --project=ui-chromium",
+    "test:headed": "npx playwright test --project=ui-chromium --headed",
+    "test:debug": "npx playwright test --debug",
+    "report": "npx playwright show-report",
+    "lint": "npx tsc --noEmit",
+    "docker:test": "docker compose run --rm playwright",
+    "docker:api": "docker compose run --rm api-tests",
+    "docker:ui": "docker compose run --rm ui-tests"
+  },
+  "keywords": ["playwright", "testing", "automation", "typescript", "api-testing", "e2e"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.2.3",
+    "dotenv": "^17.3.1",
+    "typescript": "^5.9.3",
+    "zod": "^4.3.6"
+  }
+}
