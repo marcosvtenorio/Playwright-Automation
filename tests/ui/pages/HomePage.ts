@@ -20,6 +20,7 @@ export class HomePage extends BasePage {
   // ─── Navbar ───────────────────────────────────────────
   readonly navbar: Locator;
   readonly navbarBrand: Locator;
+  readonly navbarToggler: Locator;
   readonly navLinks: Locator;
   readonly adminLink: Locator;
 
@@ -61,6 +62,7 @@ export class HomePage extends BasePage {
     // Navbar
     this.navbar = page.locator('.navbar');
     this.navbarBrand = page.locator('.navbar-brand');
+    this.navbarToggler = page.locator('.navbar-toggler');
     this.navLinks = page.locator('.nav-link');
     this.adminLink = page.locator('a.nav-link', { hasText: 'Admin' });
 
@@ -101,6 +103,23 @@ export class HomePage extends BasePage {
 
   async getNavLinkTexts(): Promise<string[]> {
     return this.navLinks.allTextContents();
+  }
+
+  async getVisibleNavLinkTexts(): Promise<string[]> {
+    const all = await this.navLinks.all();
+    const visible: string[] = [];
+    for (const link of all) {
+      if (await link.isVisible()) {
+        const text = await link.textContent();
+        if (text) visible.push(text.trim());
+      }
+    }
+    return visible;
+  }
+
+  async expandHamburgerMenu(): Promise<void> {
+    await this.navbarToggler.click();
+    await this.navLinks.first().waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async navigateToAdmin(): Promise<void> {

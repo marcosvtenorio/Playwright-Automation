@@ -23,13 +23,13 @@ test.describe('Home Page Structure', () => {
     await homePage.waitForPageLoad();
   });
 
-  test('should display hotel branding in the navbar', async () => {
+  test('BF01 - valid: should display hotel branding in the navbar', async () => {
     await expect(homePage.navbar).toBeVisible();
     await expect(homePage.navbarBrand).toBeVisible();
     await expect(homePage.navbarBrand).toHaveText('Shady Meadows B&B');
   });
 
-  test('should display navigation links for key sections', async () => {
+  test('BF02 - valid: should display navigation links for key sections', async () => {
     const navTexts = await homePage.getNavLinkTexts();
 
     expect(navTexts).toContain('Rooms');
@@ -38,18 +38,18 @@ test.describe('Home Page Structure', () => {
     expect(navTexts).toContain('Admin');
   });
 
-  test('should display the hero section with welcome heading', async () => {
+  test('BF03 - valid: should display the hero section with welcome heading', async () => {
     await expect(homePage.heroHeading).toBeVisible();
     await expect(homePage.heroBookNowLink).toBeVisible();
   });
 
-  test('should display the booking availability widget', async () => {
+  test('BF04 - valid: should display the booking availability widget', async () => {
     await expect(homePage.bookingSection).toBeVisible();
     await expect(homePage.checkAvailabilityButton).toBeVisible();
     await expect(homePage.checkAvailabilityButton).toHaveText('Check Availability');
   });
 
-  test('should display room cards with names, prices, and book links', async () => {
+  test('BF05 - valid: should display room cards with names, prices, and book links', async () => {
     await homePage.scrollToRooms();
 
     await expect(homePage.roomsSectionHeading).toHaveText('Our Rooms');
@@ -69,7 +69,7 @@ test.describe('Home Page Structure', () => {
     expect(bookLinksCount).toBe(roomCount);
   });
 
-  test('should display the location section with contact information', async () => {
+  test('BF06 - valid: should display the location section with contact information', async () => {
     await expect(homePage.locationSection).toBeVisible();
     await expect(homePage.contactInfoCard).toBeVisible();
     await expect(homePage.contactInfoCard).toContainText('Address');
@@ -77,7 +77,7 @@ test.describe('Home Page Structure', () => {
     await expect(homePage.contactInfoCard).toContainText('Email');
   });
 
-  test('should display the contact form section', async () => {
+  test('BF07 - valid: should display the contact form section', async () => {
     await homePage.scrollToContact();
 
     await expect(homePage.contactSection).toBeVisible();
@@ -89,7 +89,7 @@ test.describe('Home Page Structure', () => {
     await expect(homePage.contactSubmitButton).toBeVisible();
   });
 
-  test('should display the footer with business information', async () => {
+  test('BF08 - valid: should display the footer with business information', async () => {
     await expect(homePage.footer).toBeVisible();
     await expect(homePage.footer).toContainText('Shady Meadows B&B');
   });
