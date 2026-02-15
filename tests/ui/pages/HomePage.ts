@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, Response } from '@playwright/test';
 import { BasePage } from './BasePage.js';
 import type { ContactFormData } from '../../fixtures/contact.data.js';
 
@@ -30,6 +30,8 @@ export class HomePage extends BasePage {
 
   // ─── Booking Widget ───────────────────────────────────
   readonly bookingSection: Locator;
+  readonly checkinInput: Locator;
+  readonly checkoutInput: Locator;
   readonly checkAvailabilityButton: Locator;
 
   // ─── Rooms Section ────────────────────────────────────
@@ -72,6 +74,8 @@ export class HomePage extends BasePage {
 
     // Booking widget
     this.bookingSection = page.locator('#booking');
+    this.checkinInput = this.bookingSection.getByRole('textbox').first();
+    this.checkoutInput = this.bookingSection.getByRole('textbox').last();
     this.checkAvailabilityButton = page.getByRole('button', { name: 'Check Availability' });
 
     // Rooms
@@ -169,4 +173,127 @@ export class HomePage extends BasePage {
   async scrollToRooms(): Promise<void> {
     await this.roomsSection.scrollIntoViewIfNeeded();
   }
+
+  // ─── Booking Widget Actions ──────────────────────────
+
+  /**
+   * Pick a date from the Check In datepicker.
+   * @param day - Day of the month to select (1-31)
+   * @param monthOffset - Number of months to navigate: positive = forward, negative = backward, 0 = current
+   */
+  async selectCheckinDate(day: number, monthOffset = 0): Promise<void> {
+    await this.checkinInput.click();
+    await this.navigateDatepicker(monthOffset);
+    await this.pickDay(day);
+  }
+
+  /**
+   * Pick a date from the Check Out datepicker.
+   * @param day - Day of the month to select (1-31)
+   * @param monthOffset - Number of months to navigate
+   */
+  async selectCheckoutDate(day: number, monthOffset = 0): Promise<void> {
+    await this.checkoutInput.click();
+    await this.navigateDatepicker(monthOffset);
+    await this.pickDay(day);
+  }
+
+  /** Click "Check Availability" button (scrolls to rooms section) */
+  async clickCheckAvailabilityButton(): Promise<void> {
+    await this.checkAvailabilityButton.click();
+  }
+
+  /** Get the href values from all "Book now" links in room cards */
+  async getBookNowHrefs(): Promise<string[]> {
+    const links = await this.bookNowLinks.all();
+    const hrefs: string[] = [];
+    for (const link of links) {
+      const href = await link.getAttribute('href');
+      if (href) hrefs.push(href);
+    }
+    return hrefs;
+  }
+
+  // ─── Private Helpers ────────────────────────────────────
+
+  /**
+   * Select a day inside the currently open datepicker dialog.
+   * Uses the pattern `, DAY ` to match the accessible name precisely
+   * (e.g. "Choose Friday, 20 March 2026") and avoid partial matches with year "2026".
+   */
+  private async pickDay(day: number): Promise<void> {
+    const dialog = this.page.getByRole('dialog', { name: 'Choose Date' });
+    await dialog.getByRole('gridcell', { name: new RegExp(`, ${day} `) }).first().click();
+  }
+
+  /** Navigate months inside an open datepicker dialog */
+  private async navigateDatepicker(monthOffset: number): Promise<void> {
+    if (monthOffset === 0) return;
+    const dialog = this.page.getByRole('dialog', { name: 'Choose Date' });
+    await dialog.waitFor({ state: 'visible' });
+    const buttonName = monthOffset > 0 ? 'Next Month' : 'Previous Month';
+    for (let i = 0; i < Math.abs(monthOffset); i++) {
+      await dialog.getByRole('button', { name: buttonName }).click();
+    }
+  }
+
+  // ─── Check Availability Functional Tests ────────────────
+
+  /**
+   * Wait for the availability API call and return the response.
+   * Throws on timeout — callers get a descriptive Playwright error instead of silent null.
+   * @param expectedCheckin - Expected check-in date in YYYY-MM-DD format
+   * @param expectedCheckout - Expected check-out date in YYYY-MM-DD format
+   */
+  async waitForAvailabilitySearch(expectedCheckin: string, expectedCheckout: string): Promise<Response> {
+    return this.page.waitForResponse(
+      (response) => {
+        const url = response.url();
+        return (
+          url.includes('/api/room') &&
+          url.includes(`checkin=${expectedCheckin}`) &&
+          url.includes(`checkout=${expectedCheckout}`)
+        );
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  /**
+   * Extract checkin and checkout Date objects from a reservation href.
+   */
+  parseDatesFromHref(href: string): { checkin: Date; checkout: Date } {
+    const checkinMatch = href.match(/checkin=(\d{4}-\d{2}-\d{2})/);
+    const checkoutMatch = href.match(/checkout=(\d{4}-\d{2}-\d{2})/);
+    if (!checkinMatch || !checkoutMatch) {
+      throw new Error(`Invalid href format: ${href}`);
+    }
+    return {
+      checkin: new Date(checkinMatch[1]),
+      checkout: new Date(checkoutMatch[1]),
+    };
+  }
+
+  /**
+   * Format date for URL (converts DD/MM/YYYY to YYYY-MM-DD).
+   */
+  formatDateForUrl(dateString: string): string {
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Get the current check-in date value from the input field.
+   */
+  async getCheckinDateValue(): Promise<string> {
+    return (await this.checkinInput.inputValue()) || '';
+  }
+
+  /**
+   * Get the current check-out date value from the input field.
+   */
+  async getCheckoutDateValue(): Promise<string> {
+    return (await this.checkoutInput.inputValue()) || '';
+  }
+
 }
