@@ -34,5 +34,5 @@ services:
     volumes:
       - ./playwright-report:/app/playwright-report
       - ./test-results:/app/test-results
-    command: npx playwright test --project=ui-chromium
+    command: npx playwright test --project=ui-desktop
 
