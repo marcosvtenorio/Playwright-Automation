@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 /**
  * Base Page Object providing shared navigation and utility methods.
@@ -19,22 +19,6 @@ export abstract class BasePage {
 
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('networkidle');
-  }
-
-  async isElementVisible(locator: Locator): Promise<boolean> {
-    return locator.isVisible();
-  }
-
-  async expectVisible(locator: Locator): Promise<void> {
-    await expect(locator).toBeVisible();
-  }
-
-  async expectText(locator: Locator, text: string): Promise<void> {
-    await expect(locator).toHaveText(text);
-  }
-
-  async expectToContainText(locator: Locator, text: string): Promise<void> {
-    await expect(locator).toContainText(text);
   }
 }
 
