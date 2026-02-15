@@ -6,6 +6,18 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const isCI = !!process.env.CI;
 
+/** Shared browser settings for all UI projects (Desktop, Tablet, Mobile) */
+const sharedUiUse = {
+  ...devices['Desktop Chrome'],
+  baseURL: process.env.UI_BASE_URL ?? 'https://automationintesting.online',
+  headless: process.env.HEADLESS !== 'false',
+  launchOptions: {
+    slowMo: Number(process.env.SLOW_MO ?? 0),
+  },
+} as const;
+
+const responsiveTestMatch = ['**/responsive.spec.ts', '**/form-validation.spec.ts', '**/booking-flow.spec.ts'];
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -41,19 +53,29 @@ export default defineConfig({
       },
     },
 
-    // ─── UI Tests (Chromium) ────────────────────────────
+    // ─── UI Tests (Desktop — 1280×720) ──────────────────
     {
-      name: 'ui-chromium',
+      name: 'ui-desktop',
       testDir: './tests/ui',
       testMatch: '**/*.spec.ts',
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: process.env.UI_BASE_URL ?? 'https://automationintesting.online',
-        headless: process.env.HEADLESS !== 'false',
-        launchOptions: {
-          slowMo: Number(process.env.SLOW_MO ?? 0),
-        },
-      },
+      testIgnore: '**/responsive.spec.ts',
+      use: { ...sharedUiUse },
+    },
+
+    // ─── UI Tests (Tablet — 768×1024) ──────────────────
+    {
+      name: 'ui-tablet',
+      testDir: './tests/ui',
+      testMatch: responsiveTestMatch,
+      use: { ...sharedUiUse, viewport: { width: 768, height: 1024 } },
+    },
+
+    // ─── UI Tests (Mobile — 375×667) ─────────────────────
+    {
+      name: 'ui-mobile',
+      testDir: './tests/ui',
+      testMatch: responsiveTestMatch,
+      use: { ...sharedUiUse, viewport: { width: 375, height: 667 } },
     },
   ],
 });
