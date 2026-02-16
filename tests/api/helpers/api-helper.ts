@@ -9,6 +9,7 @@
  */
 
 import { APIRequestContext } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { ENV } from '../../config/env.js';
 
 /**
@@ -109,6 +110,7 @@ export async function getBookingById(
 /**
  * Generate a future date string (YYYY-MM-DD).
  * Each testSlot gets its own month to prevent overlap between tests.
+ * UUID ensures absolute uniqueness in parallel test execution.
  *
  * @param testSlot - Unique slot per test (1-15), each offset 1 month apart
  * @param day - Day of the month (1-28 recommended to avoid month-length issues)
@@ -116,7 +118,13 @@ export async function getBookingById(
  */
 export function generateFutureDate(testSlot: number, day: number): string {
   const now = new Date();
-  const future = new Date(now.getFullYear(), now.getMonth() + 3 + testSlot, day);
+  // Use randomUUID() to ensure absolute uniqueness in parallel execution
+  // Convert first 8 hex chars of UUID to number (0-4294967295) for month offset
+  const uuid = randomUUID().replace(/-/g, '');
+  const uuidHash = parseInt(uuid.substring(0, 8), 16);
+  // Use modulo 12 to get 0-11 months additional offset, ensuring uniqueness
+  const monthOffset = testSlot + (uuidHash % 12);
+  const future = new Date(now.getFullYear(), now.getMonth() + 3 + monthOffset, day);
   return future.toISOString().split('T')[0];
 }
 

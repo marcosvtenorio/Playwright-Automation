@@ -1,29 +1,29 @@
 import { ENV } from '../config/env.js';
 
 /**
- * Admin Authentication Fixtures
+ * Authentication Fixtures - Restful Booker API
  *
- * Credentials for testing admin login flow.
- * Uses environment variables with sensible defaults for the test environment.
+ * Credentials for testing authentication endpoints.
+ * Uses API-specific environment variables (API_AUTH_USERNAME, API_AUTH_PASSWORD).
  */
 
-export interface AdminCredentials {
+export interface AuthCredentials {
   username: string;
   password: string;
 }
 
-/** Valid admin credentials — should successfully log in */
-export function createValidAdminCredentials(): AdminCredentials {
+/** Valid API credentials — should successfully authenticate and return token */
+export function createValidAuthCredentials(): AuthCredentials {
   return {
-    username: ENV.UI_ADMIN_USERNAME,
-    password: ENV.UI_ADMIN_PASSWORD,
+    username: ENV.API_AUTH_USERNAME,
+    password: ENV.API_AUTH_PASSWORD,
   };
 }
 
-/** Invalid admin credentials — should show error message */
-export function createInvalidAdminCredentials(): AdminCredentials {
+/** Invalid API credentials — should return error with reason "Bad credentials" */
+export function createInvalidAuthCredentials(): AuthCredentials {
   return {
-    username: 'invalid_user',
-    password: 'wrong_password',
+    username: 'invalid',
+    password: 'invalid',
   };
 }
