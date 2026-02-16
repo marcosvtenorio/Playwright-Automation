@@ -2,7 +2,8 @@
  * Booking Fixtures
  *
  * Part 1: Date combinations for check-availability tests.
- * Part 2: Reservation form data for booking-form tests (BVA).
+ * Part 2: Reservation form data for booking-form tests (BVA) - UI only.
+ * Part 3: Booking request data for API tests (BVA).
  *
  * All dates are relative to today to ensure tests remain valid over time.
  */
@@ -183,4 +184,122 @@ export function createInvalidEmailReservation(overrides?: Partial<ReservationFor
     phone: '12345678901234',
     ...overrides,
   };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Part 3 — Booking Request Fixtures (API Tests)
+// ═══════════════════════════════════════════════════════════
+
+import type { BookingRequest } from '../types/booking.types.js';
+import { generateDateRange } from '../api/helpers/api-helper.js';
+
+/**
+ * Create valid booking request with all fields within boundaries.
+ * For API tests - includes roomid, depositpaid, and bookingdates.
+ */
+export function createValidBookingRequest(
+  overrides?: Partial<BookingRequest>
+): BookingRequest {
+  const defaultDates = generateDateRange(1, 3);
+  
+  return {
+    roomid: 1,
+    firstname: 'John', // 4 chars (min: 3, max: 18)
+    lastname: 'Doe', // 3 chars (min: 3, max: 30)
+    email: 'john.doe@example.com',
+    phone: '12345678901', // 11 chars (min: 11, max: 21)
+    depositpaid: true,
+    bookingdates: {
+      checkin: defaultDates.checkin,
+      checkout: defaultDates.checkout,
+    },
+    ...overrides,
+  };
+}
+
+/**
+ * Create booking request with minimum boundary values.
+ */
+export function createMinBoundaryBookingRequest(
+  overrides?: Partial<BookingRequest>
+): BookingRequest {
+  const defaultDates = generateDateRange(2, 3);
+  
+  return {
+    roomid: 1,
+    firstname: 'Abc', // Exactly 3 chars (minimum)
+    lastname: 'Xyz', // Exactly 3 chars (minimum)
+    email: 'min@test.com',
+    phone: '12345678901', // Exactly 11 chars (minimum)
+    depositpaid: false,
+    bookingdates: {
+      checkin: defaultDates.checkin,
+      checkout: defaultDates.checkout,
+    },
+    ...overrides,
+  };
+}
+
+/**
+ * Create booking request with maximum boundary values.
+ */
+export function createMaxBoundaryBookingRequest(
+  overrides?: Partial<BookingRequest>
+): BookingRequest {
+  const defaultDates = generateDateRange(3, 3);
+  
+  return {
+    roomid: 1,
+    firstname: repeatToLength('A', 18), // Exactly 18 chars (maximum)
+    lastname: repeatToLength('B', 30), // Exactly 30 chars (maximum)
+    email: 'maxboundarytest@example.com',
+    phone: repeatToLength('1', 21), // Exactly 21 chars (maximum)
+    depositpaid: true,
+    bookingdates: {
+      checkin: defaultDates.checkin,
+      checkout: defaultDates.checkout,
+    },
+    ...overrides,
+  };
+}
+
+/**
+ * Create booking request with invalid data (below minimum or above maximum).
+ */
+export function createInvalidBookingRequest(
+  type: 'belowMin' | 'aboveMax' | 'invalidEmail',
+  overrides?: Partial<BookingRequest>
+): BookingRequest {
+  const defaultDates = generateDateRange(4, 3);
+  const base = createValidBookingRequest({ bookingdates: defaultDates });
+
+  switch (type) {
+    case 'belowMin':
+      return {
+        ...base,
+        firstname: 'Ab', // 2 chars (below min: 3)
+        lastname: 'Xy', // 2 chars (below min: 3)
+        phone: '1234567890', // 10 chars (below min: 11)
+        ...overrides,
+      };
+
+    case 'aboveMax':
+      return {
+        ...base,
+        firstname: repeatToLength('A', 19), // 19 chars (above max: 18)
+        lastname: repeatToLength('B', 31), // 31 chars (above max: 30)
+        phone: repeatToLength('1', 22), // 22 chars (above max: 21)
+        ...overrides,
+      };
+
+    case 'invalidEmail':
+      return {
+        ...base,
+        email: 'not-an-email', // Invalid email format
+        ...overrides,
+      };
+
+    default:
+      return base;
+  }
 }
