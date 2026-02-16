@@ -52,25 +52,30 @@ export class AdminDashboardPage extends BasePage {
   /** Navigate to Rooms tab */
   async navigateToRooms(): Promise<void> {
     await this.roomsTab.click();
-    await this.page.waitForURL('**/admin/rooms', { timeout: 5000 });
+    await this.page.waitForURL(/\/admin\/rooms/, { timeout: 5000 });
   }
 
   /** Navigate to Report tab */
   async navigateToReport(): Promise<void> {
-    await this.reportTab.click();
-    await this.page.waitForURL('**/admin/report', { timeout: 5000 });
+    // Use Promise.all to click and wait for navigation simultaneously
+    await Promise.all([
+      this.page.waitForURL(/\/admin\/report/, { timeout: 10000 }),
+      this.reportTab.click(),
+    ]);
+    // Also wait a moment for the page to fully render
+    await this.page.waitForTimeout(500);
   }
 
   /** Navigate to Branding tab */
   async navigateToBranding(): Promise<void> {
     await this.brandingTab.click();
-    await this.page.waitForURL('**/admin/branding', { timeout: 5000 });
+    await this.page.waitForURL(/\/admin\/branding/, { timeout: 5000 });
   }
 
   /** Navigate to Messages tab */
   async navigateToMessages(): Promise<void> {
     await this.messagesTab.click();
-    await this.page.waitForURL('**/admin/message', { timeout: 5000 });
+    await this.page.waitForURL(/\/admin\/message/, { timeout: 5000 });
   }
 
   /** Logout and return to home page */
