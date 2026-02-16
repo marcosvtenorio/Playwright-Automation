@@ -160,7 +160,7 @@ test.describe('Reservation Form', () => {
     // API returns "size must be between 3 and 18" without specifying WHICH field.
     // Ideal: every error message should reference the field name (e.g. "Firstname size...").
     // Remove test.fail() when the bug is fixed.
-    test.fail();
+    test.fail(true, 'BUG-009');
 
     const checkin = futureDate(4, 1);
     const checkout = futureDate(4, 4);
@@ -188,7 +188,7 @@ test.describe('Reservation Form', () => {
     // API returns "size must be between 3 and 18" without specifying WHICH field.
     // Ideal: every error message should reference the field name (e.g. "Firstname size...").
     // Remove test.fail() when the bug is fixed.
-    test.fail();
+    test.fail(true, 'BUG-009');
 
     const checkin = futureDate(5, 6);
     const checkout = futureDate(5, 9);
@@ -218,7 +218,7 @@ test.describe('Reservation Form', () => {
     // API returns "size must be between 3 and 18" without specifying WHICH field.
     // Ideal: every error message should reference the field name (e.g. "Firstname size...").
     // Remove test.fail() when the bug is fixed.
-    test.fail();
+    test.fail(true, 'BUG-009');
 
     const checkin = futureDate(6, 11);
     const checkout = futureDate(6, 14);
@@ -316,7 +316,7 @@ test.describe('Reservation Form', () => {
     // instead of showing a user-friendly error message.
     // Ideal: show an error like "These dates are no longer available".
     // Remove test.fail() when the bug is fixed.
-    test.fail();
+    test.fail(true, 'BUG-010');
 
     const checkin = futureDate(9, 1);
     const checkout = futureDate(9, 4);

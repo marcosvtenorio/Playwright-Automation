@@ -36,7 +36,7 @@ test.describe('Booking Lifecycle API Tests', () => {
     // Expected: 201 Created
     // Actual: 200 OK
     // This test documents the expected behavior (201) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-001');
     
     // Arrange
     const bookingData = createValidBookingRequest();
@@ -123,7 +123,7 @@ test.describe('Booking Lifecycle API Tests', () => {
     // Expected: 200 OK (RESTful standard for GET requests)
     // Actual: 201 Created
     // This test documents the expected behavior (200) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-008');
     
     // Arrange & Act
     const response = await request.get('/ping');

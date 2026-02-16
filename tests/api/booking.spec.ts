@@ -35,7 +35,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 201 Created
     // Actual: 200 OK
     // This test documents the expected behavior (201) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-001');
     
     // Arrange
     const bookingData = createValidBookingRequest();
@@ -68,7 +68,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 201 Created (RESTful standard)
     // Actual: 200 OK
     // This test documents the expected behavior (201) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-001');
     
     // Arrange
     const bookingData = createMinBoundaryBookingRequest();
@@ -95,7 +95,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 201 Created (RESTful standard)
     // Actual: 200 OK
     // This test documents the expected behavior (201) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-001');
     
     // Arrange
     const bookingData = createMaxBoundaryBookingRequest();
@@ -123,7 +123,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 400 Bad Request
     // Actual: 200 OK (creates booking with empty firstname/lastname)
     // This test documents the expected behavior (400) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-002');
     
     // Arrange
     const bookingData = createInvalidBookingRequest('emptyFields');
@@ -156,7 +156,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 400 Bad Request
     // Actual: 200 OK (creates booking with negative price)
     // This test documents the expected behavior (400) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-003');
     
     // Arrange
     const bookingData = createInvalidBookingRequest('negativePrice');
@@ -188,7 +188,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 400 Bad Request
     // Actual: 200 OK (creates booking with invalid date range)
     // This test documents the expected behavior (400) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-004');
     
     // Arrange
     const bookingData = createInvalidBookingRequest('invalidDates');
@@ -375,7 +375,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 400 Bad Request
     // Actual: 200 OK (updates booking with invalid data)
     // This test documents the expected behavior (400) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-005');
     
     // Arrange
     const bookingData = createValidBookingRequest();
@@ -430,7 +430,7 @@ test.describe('Booking API Tests', () => {
     // Expected: 400 Bad Request
     // Actual: 200 OK (updates booking with invalid data)
     // This test documents the expected behavior (400) but will fail until API is fixed
-    test.fail();
+    test.fail(true, 'BUG-006');
     
     // Arrange
     const bookingData = createValidBookingRequest();

@@ -86,7 +86,7 @@ test.describe('Check Availability', () => {
     // Expected: 400 Bad Request or client-side prevention
     // Impact: Users can proceed with impossible date ranges → broken reservations
     // Remove test.fail() when the bug is fixed
-    test.fail();
+    test.fail(true, 'BUG-011');
 
     const dateRange = createInvalidDateRange();
 
@@ -114,7 +114,7 @@ test.describe('Check Availability', () => {
     // Expected: 400 Bad Request or datepicker should disable past dates
     // Impact: Users can search for rooms on dates that have already passed
     // Remove test.fail() when the bug is fixed
-    test.fail();
+    test.fail(true, 'BUG-012');
 
     const dateRange = createPastDateRange();
 

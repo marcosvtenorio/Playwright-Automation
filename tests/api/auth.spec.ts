@@ -49,7 +49,7 @@ test.describe('Authentication API Tests', () => {
     // Expected: 401 Unauthorized
     // Actual: 200 OK with {reason: "Bad credentials"}
     // This test documents the expected behavior (401) but will fail until API is fixed or CR closed as WAD (work as design)
-    test.fail();
+    test.fail(true, 'BUG-007');
     
     // Arrange
     const invalidAuthData = createInvalidAuthCredentials();
