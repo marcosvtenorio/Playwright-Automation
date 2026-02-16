@@ -1,1 +1,1 @@
-
+export * from './room.types.js';

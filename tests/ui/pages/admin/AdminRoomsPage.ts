@@ -1,5 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from '../BasePage.js';
+import type { RoomFormData } from '../../../types/room.types.js';
 
 /**
  * Page Object for the /admin/rooms tab.
@@ -114,14 +115,7 @@ export class AdminRoomsPage extends BasePage {
   // ─── Create Room Actions ───────────────────────────────────
 
   /** Fill the create room form */
-  // NOTE: type is string (not union type) to allow backend flexibility for future room types
-  async fillRoomForm(data: {
-    roomNumber: string;
-    type: string; // Valid values: 'Single', 'Twin', 'Double', 'Family', 'Suite' (but flexible for future types)
-    accessible: boolean;
-    price: string;
-    features?: string[];
-  }): Promise<void> {
+  async fillRoomForm(data: RoomFormData): Promise<void> {
     await this.roomNumberInput.fill(data.roomNumber);
     await this.roomTypeSelect.selectOption(data.type);
     await this.accessibleSelect.selectOption(data.accessible ? 'true' : 'false');
@@ -139,14 +133,7 @@ export class AdminRoomsPage extends BasePage {
   }
 
   /** Submit the create room form */
-  // NOTE: type is string (not union type) to allow backend flexibility for future room types
-  async createRoom(data: {
-    roomNumber: string;
-    type: string; // Valid values: 'Single', 'Twin', 'Double', 'Family', 'Suite' (but flexible for future types)
-    accessible: boolean;
-    price: string;
-    features?: string[];
-  }): Promise<void> {
+  async createRoom(data: RoomFormData): Promise<void> {
     await this.fillRoomForm(data);
     await this.createButton.click();
   }

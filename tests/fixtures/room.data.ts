@@ -1,3 +1,5 @@
+import type { RoomFormData } from '../types/room.types.js';
+
 /**
  * Room Fixtures
  *
@@ -10,14 +12,6 @@
  * - Accessible: true/false
  * - Features: WiFi, TV, Radio, Refreshments, Safe, Views (optional checkboxes)
  */
-
-export interface RoomFormData {
-  roomNumber: string;
-  type: 'Single' | 'Twin' | 'Double' | 'Family' | 'Suite';
-  accessible: boolean;
-  price: string;
-  features?: string[];
-}
 
 /**
  * Generates a unique room number based on timestamp.
