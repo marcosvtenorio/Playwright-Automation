@@ -1,25 +1,26 @@
 /**
- * Booking API Types
+ * Restful Booker API Types
  *
- * Interfaces derived from empirical API testing via Playwright MCP.
- * All field boundaries confirmed through boundary value analysis.
+ * Interfaces derived from empirical API testing via Playwright discovery.
+ * Based on Restful Booker API: https://restful-booker.herokuapp.com
  */
 
-// ─── Room Types ────────────────────────────────────────────
+// ─── Authentication Types ──────────────────────────────────
 
-export interface Room {
-  roomid: number;
-  roomName: string;
-  type: string;
-  accessible: boolean;
-  image: string;
-  description: string;
-  features: string[];
-  roomPrice: number;
+/** POST /auth — request payload */
+export interface AuthRequest {
+  username: string;
+  password: string;
 }
 
-export interface RoomListResponse {
-  rooms: Room[];
+/** POST /auth → 200 — success response */
+export interface AuthResponse {
+  token: string;
+}
+
+/** POST /auth → 200 — error response (invalid credentials) */
+export interface AuthError {
+  reason: string; // "Bad credentials"
 }
 
 // ─── Booking Types ─────────────────────────────────────────
@@ -29,77 +30,40 @@ export interface BookingDates {
   checkout: string; // YYYY-MM-DD
 }
 
-/** POST /api/booking — request payload */
+/** POST /booking — request payload */
 export interface BookingRequest {
-  roomid: number;
-  firstname: string;   // 3-18 chars
-  lastname: string;    // 3-30 chars
-  email: string;       // well-formed email
-  phone: string;       // 11-21 chars
-  depositpaid: boolean;
-  bookingdates: BookingDates;
-}
-
-/** POST /api/booking → 201 — success response */
-export interface BookingResponse {
-  bookingid: number;
-  roomid: number;
   firstname: string;
   lastname: string;
+  totalprice: number;
   depositpaid: boolean;
   bookingdates: BookingDates;
-  // Note: email and phone are NOT returned by the API
+  additionalneeds?: string; // Optional
 }
 
-/** POST /api/booking → 400 — validation error response */
-export interface BookingValidationError {
-  errors: string[];
+/** POST /booking → 200 — success response */
+export interface BookingCreateResponse {
+  bookingid: number;
+  booking: BookingDetails;
 }
 
-/** POST /api/booking → 409 — conflict error response */
-export interface BookingConflictError {
-  error: string; // "Failed to create booking"
+/** GET /booking/:id → 200 — booking details */
+export interface BookingDetails {
+  firstname: string;
+  lastname: string;
+  totalprice: number;
+  depositpaid: boolean;
+  bookingdates: BookingDates;
+  additionalneeds?: string;
 }
 
-// ─── Report Types ──────────────────────────────────────────
+/** PUT /booking/:id — request payload (same as BookingRequest) */
+export type BookingUpdateRequest = BookingRequest;
 
-export interface UnavailableDateRange {
-  start: string;  // YYYY-MM-DD
-  end: string;    // YYYY-MM-DD
-  title: 'Unavailable';
-}
+/** PATCH /booking/:id — partial update request */
+export type BookingPartialUpdate = Partial<BookingRequest>;
 
-/** GET /api/report/room/:id — unavailable dates for a room */
-export type RoomAvailabilityReport = UnavailableDateRange[];
-
-// ─── Branding Types ────────────────────────────────────────
-
-export interface BrandingContact {
-  name: string;
-  phone: string;
-  email: string;
-}
-
-export interface BrandingAddress {
-  line1: string;
-  line2: string;
-  postTown: string;
-  county: string;
-  postCode: string;
-}
-
-export interface BrandingMap {
-  latitude: number;
-  longitude: number;
-}
-
-/** GET /api/branding — site branding and contact info */
-export interface BrandingResponse {
-  name: string;
-  map: BrandingMap;
-  logoUrl: string;
-  description: string;
-  directions: string;
-  contact: BrandingContact;
-  address: BrandingAddress;
+/** Error responses */
+export interface BookingError {
+  error?: string;
+  reason?: string;
 }

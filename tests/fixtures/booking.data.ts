@@ -195,7 +195,7 @@ import { generateDateRange } from '../api/helpers/api-helper.js';
 
 /**
  * Create valid booking request with all fields within boundaries.
- * For API tests - includes roomid, depositpaid, and bookingdates.
+ * API structure: firstname, lastname, totalprice, depositpaid, bookingdates, additionalneeds (optional)
  */
 export function createValidBookingRequest(
   overrides?: Partial<BookingRequest>
@@ -203,22 +203,22 @@ export function createValidBookingRequest(
   const defaultDates = generateDateRange(1, 3);
   
   return {
-    roomid: 1,
-    firstname: 'John', // 4 chars (min: 3, max: 18)
-    lastname: 'Doe', // 3 chars (min: 3, max: 30)
-    email: 'john.doe@example.com',
-    phone: '12345678901', // 11 chars (min: 11, max: 21)
+    firstname: 'John',
+    lastname: 'Doe',
+    totalprice: 111,
     depositpaid: true,
     bookingdates: {
       checkin: defaultDates.checkin,
       checkout: defaultDates.checkout,
     },
+    additionalneeds: 'Breakfast',
     ...overrides,
   };
 }
 
 /**
  * Create booking request with minimum boundary values.
+ * minimum totalprice is 0, no specific min length for names
  */
 export function createMinBoundaryBookingRequest(
   overrides?: Partial<BookingRequest>
@@ -226,11 +226,9 @@ export function createMinBoundaryBookingRequest(
   const defaultDates = generateDateRange(2, 3);
   
   return {
-    roomid: 1,
-    firstname: 'Abc', // Exactly 3 chars (minimum)
-    lastname: 'Xyz', // Exactly 3 chars (minimum)
-    email: 'min@test.com',
-    phone: '12345678901', // Exactly 11 chars (minimum)
+    firstname: 'A',
+    lastname: 'B',
+    totalprice: 0,
     depositpaid: false,
     bookingdates: {
       checkin: defaultDates.checkin,
@@ -242,6 +240,7 @@ export function createMinBoundaryBookingRequest(
 
 /**
  * Create booking request with maximum boundary values.
+ * no specific max length for names, using reasonable values
  */
 export function createMaxBoundaryBookingRequest(
   overrides?: Partial<BookingRequest>
@@ -249,53 +248,53 @@ export function createMaxBoundaryBookingRequest(
   const defaultDates = generateDateRange(3, 3);
   
   return {
-    roomid: 1,
-    firstname: repeatToLength('A', 18), // Exactly 18 chars (maximum)
-    lastname: repeatToLength('B', 30), // Exactly 30 chars (maximum)
-    email: 'maxboundarytest@example.com',
-    phone: repeatToLength('1', 21), // Exactly 21 chars (maximum)
+    firstname: repeatToLength('A', 50), // Reasonable max length
+    lastname: repeatToLength('B', 50), // Reasonable max length
+    totalprice: 999999,
     depositpaid: true,
     bookingdates: {
       checkin: defaultDates.checkin,
       checkout: defaultDates.checkout,
     },
+    additionalneeds: repeatToLength('Need ', 200), // Long additional needs
     ...overrides,
   };
 }
 
 /**
- * Create booking request with invalid data (below minimum or above maximum).
+ * Create booking request with invalid data.
+ * validation: negative totalprice, empty required fields, invalid dates
  */
 export function createInvalidBookingRequest(
-  type: 'belowMin' | 'aboveMax' | 'invalidEmail',
+  type: 'negativePrice' | 'emptyFields' | 'invalidDates',
   overrides?: Partial<BookingRequest>
 ): BookingRequest {
   const defaultDates = generateDateRange(4, 3);
   const base = createValidBookingRequest({ bookingdates: defaultDates });
 
   switch (type) {
-    case 'belowMin':
+    case 'negativePrice':
       return {
         ...base,
-        firstname: 'Ab', // 2 chars (below min: 3)
-        lastname: 'Xy', // 2 chars (below min: 3)
-        phone: '1234567890', // 10 chars (below min: 11)
+        totalprice: -1, // Negative price (invalid)
         ...overrides,
       };
 
-    case 'aboveMax':
+    case 'emptyFields':
       return {
         ...base,
-        firstname: repeatToLength('A', 19), // 19 chars (above max: 18)
-        lastname: repeatToLength('B', 31), // 31 chars (above max: 30)
-        phone: repeatToLength('1', 22), // 22 chars (above max: 21)
+        firstname: '', // Empty firstname (invalid)
+        lastname: '', // Empty lastname (invalid)
         ...overrides,
       };
 
-    case 'invalidEmail':
+    case 'invalidDates':
       return {
         ...base,
-        email: 'not-an-email', // Invalid email format
+        bookingdates: {
+          checkin: '2025-06-03', // Checkout before checkin (invalid)
+          checkout: '2025-06-01',
+        },
         ...overrides,
       };
 

@@ -4,26 +4,25 @@
  * Utility functions for API tests:
  * - Authentication
  * - Cleanup operations
- * - Room operations
  * - Date generation
+ * 
  */
 
 import { APIRequestContext } from '@playwright/test';
 import { ENV } from '../../config/env.js';
-import type { Room, BookingResponse } from '../../types/booking.types.js';
 
 /**
  * Authenticate admin user and return token.
- * Token may be in response body or Set-Cookie header.
+ * API returns token in response body.
  *
  * @returns Token string or null if authentication fails
  */
 export async function authenticateAdmin(request: APIRequestContext): Promise<string | null> {
   try {
-    const response = await request.post('/api/auth/login', {
+    const response = await request.post('/auth', {
       data: {
-        username: ENV.UI_ADMIN_USERNAME,
-        password: ENV.UI_ADMIN_PASSWORD,
+        username: ENV.API_AUTH_USERNAME,
+        password: ENV.API_AUTH_PASSWORD,
       },
     });
 
@@ -38,15 +37,6 @@ export async function authenticateAdmin(request: APIRequestContext): Promise<str
       return body.token;
     }
 
-    // Try to get token from Set-Cookie header
-    const setCookieHeader = response.headers()['set-cookie'];
-    if (setCookieHeader) {
-      const cookieMatch = setCookieHeader.match(/token=([^;]+)/);
-      if (cookieMatch && cookieMatch[1]) {
-        return cookieMatch[1];
-      }
-    }
-
     return null;
   } catch {
     return null;
@@ -55,6 +45,7 @@ export async function authenticateAdmin(request: APIRequestContext): Promise<str
 
 /**
  * Delete a booking by ID via admin API.
+ * API requires authentication via Cookie header.
  * Best-effort cleanup — errors are swallowed.
  *
  * @param request - Playwright API request context
@@ -67,7 +58,7 @@ export async function deleteBooking(request: APIRequestContext, bookingId: numbe
       return; // Can't cleanup without auth
     }
 
-    await request.delete(`/api/booking/${bookingId}`, {
+    await request.delete(`/booking/${bookingId}`, {
       headers: { Cookie: `token=${token}` },
     });
   } catch {
@@ -92,48 +83,24 @@ export async function cleanupBookings(
 }
 
 /**
- * Get the first available room from the API.
- *
- * @returns Room object or null if no rooms available
- */
-export async function getAvailableRoom(request: APIRequestContext): Promise<Room | null> {
-  try {
-    const response = await request.get('/api/room');
-    if (response.status() !== 200) {
-      return null;
-    }
-
-    const body = await response.json();
-    const rooms = Array.isArray(body) ? body : body.rooms || [];
-
-    if (rooms.length === 0) {
-      return null;
-    }
-
-    return rooms[0] as Room;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Get room details by ID.
+ * Get a booking by ID.
+ * API does not have room endpoints, so we use bookings instead.
  *
  * @param request - Playwright API request context
- * @param roomId - Room ID to retrieve
- * @returns Room object or null if not found
+ * @param bookingId - Booking ID to retrieve
+ * @returns Booking object or null if not found
  */
-export async function getRoomById(
+export async function getBookingById(
   request: APIRequestContext,
-  roomId: number
-): Promise<Room | null> {
+  bookingId: number
+): Promise<unknown | null> {
   try {
-    const response = await request.get(`/api/room/${roomId}`);
+    const response = await request.get(`/booking/${bookingId}`);
     if (response.status() !== 200) {
       return null;
     }
 
-    return (await response.json()) as Room;
+    return await response.json();
   } catch {
     return null;
   }
