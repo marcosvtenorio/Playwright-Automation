@@ -108,7 +108,7 @@ test.describe('Responsive — Reservation Page', () => {
   });
 
   test('RS05 - valid: similar room cards should fit within viewport', async ({ page }) => {
-    await expect(bookingPage.similarRoomsHeading).toBeVisible();
+    await bookingPage.scrollToSimilarRooms();
 
     const links = await bookingPage.similarRoomViewDetailsLinks.all();
     expect(links.length).toBeGreaterThanOrEqual(2);

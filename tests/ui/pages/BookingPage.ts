@@ -321,6 +321,12 @@ export class BookingPage extends BasePage {
 
   // ─── Similar Rooms Actions ───────────────────────────────
 
+  /** Scroll to the similar rooms section and wait for cards to render */
+  async scrollToSimilarRooms(): Promise<void> {
+    await this.similarRoomsHeading.scrollIntoViewIfNeeded();
+    await this.similarRoomViewDetailsLinks.first().waitFor({ state: 'visible', timeout: 10000 });
+  }
+
   /** Get the count of similar room cards */
   async getSimilarRoomCount(): Promise<number> {
     return this.similarRoomViewDetailsLinks.count();
