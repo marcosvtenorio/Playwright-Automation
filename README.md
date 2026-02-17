@@ -44,7 +44,7 @@ This project implements **77 automated tests** (17 API + 60 UI) across **4 viewp
 
 ```bash
 # Clone and install
-git clone https://github.com/MarcosTenorioDev/Playright-Automation.git
+git clone https://github.com/MarcosTenorioDev/Playwright-Automation.git
 cd technical-challenge
 npm ci
 

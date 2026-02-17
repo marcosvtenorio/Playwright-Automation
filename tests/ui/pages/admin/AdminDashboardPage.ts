@@ -170,15 +170,14 @@ export class AdminDashboardPage extends BasePage {
 
       if (!hasShowClass) {
         await hamburgerButton.click();
+        // Wait for Bootstrap collapse animation to complete
         await this.page.waitForFunction(
           () => {
             const nav = document.querySelector('#navbarSupportedContent');
             return nav && nav.classList.contains('show');
           },
           { timeout: 3000 }
-        ).catch(() => {
-          return this.page.waitForTimeout(500);
-        });
+        );
       }
     }
   }
