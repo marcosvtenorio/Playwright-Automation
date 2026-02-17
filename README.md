@@ -4,7 +4,7 @@
 
 This project implements **77 automated tests** (17 API + 60 UI) across **4 viewports** using Playwright and TypeScript. Tests follow **Equivalence Class Partitioning + Boundary Value Analysis (ECP/BVA)** methodology with business-impact prioritization. **14 application bugs** were discovered and documented using `test.fail()` — each test asserts the ideal behavior, so bug fixes are automatically detected. The entire development workflow was AI-assisted using **Cursor IDE + Playwright MCP** for live application discovery, test generation, and debugging.
 
-📹 **[Video Walkthrough](https://www.loom.com/share/cc277ec56f744b3a895b228577d7adc7)** — Brief explanation of the solution and test execution demo
+📹 **[Video Walkthrough](https://www.loom.com/share/cc277ec56f744b3a895b228577d7adc7)** — Brief explanation of the solution and test execution demo.
 
 ---
 
