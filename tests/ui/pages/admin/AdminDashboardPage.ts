@@ -152,14 +152,8 @@ export class AdminDashboardPage extends BasePage {
    * This is dashboard-specific loading logic, different from base page load.
    */
   private async waitForDashboardLoad(): Promise<void> {
-    // Wait for loading indicator to disappear
-    const loadingIndicator = this.page.locator('text=Loading...');
-    await loadingIndicator.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
-      // If loading indicator doesn't exist or already gone, continue
-    });
-
-    // Wait for page to be in a stable state (use base class method)
-    await super.waitForPageLoad();
+    // networkidle ensures all API calls completed → React has data → hydration done
+    await this.page.waitForLoadState('networkidle');
   }
 
   /**
