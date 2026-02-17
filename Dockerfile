@@ -1,8 +1,8 @@
 # ============================================
-# Playwright Test Runner — Multi-stage Docker
+# Playwright Test Runner
 # ============================================
 
-FROM mcr.microsoft.com/playwright:v1.52.0-noble AS base
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 WORKDIR /app
 
@@ -16,4 +16,3 @@ COPY tests/ ./tests/
 
 # Default: run all tests
 CMD ["npx", "playwright", "test"]
-

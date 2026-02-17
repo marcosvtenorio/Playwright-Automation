@@ -1,8 +1,8 @@
-version: '3.8'
-
 services:
+  # Run all tests (default)
   playwright:
     build: .
+    image: playwright-tests
     environment:
       - CI=true
       - API_BASE_URL=https://restful-booker.herokuapp.com
@@ -15,7 +15,7 @@ services:
 
   # Run only API tests
   api-tests:
-    build: .
+    image: playwright-tests
     environment:
       - CI=true
       - API_BASE_URL=https://restful-booker.herokuapp.com
@@ -26,7 +26,7 @@ services:
 
   # Run only UI tests
   ui-tests:
-    build: .
+    image: playwright-tests
     environment:
       - CI=true
       - UI_BASE_URL=https://automationintesting.online
@@ -35,4 +35,3 @@ services:
       - ./playwright-report:/app/playwright-report
       - ./test-results:/app/test-results
     command: npx playwright test --project=ui-desktop
-
