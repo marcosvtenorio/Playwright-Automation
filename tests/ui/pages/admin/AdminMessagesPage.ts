@@ -20,6 +20,7 @@ import { BasePage } from '../BasePage.js';
  */
 export class AdminMessagesPage extends BasePage {
   protected readonly url = '/admin/message';
+  protected readonly readyLocator = this.page.locator('p').filter({ hasText: 'Name' }).first();
 
   // ─── Messages List ─────────────────────────────────────────
   readonly messagesList: Locator;

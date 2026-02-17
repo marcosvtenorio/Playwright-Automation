@@ -37,6 +37,7 @@ import { BasePage } from '../BasePage.js';
  */
 export class AdminBrandingPage extends BasePage {
   protected readonly url = '/admin/branding';
+  protected readonly readyLocator = this.page.getByRole('button', { name: 'Submit' });
 
   // ─── B&B Details ───────────────────────────────────────────
   readonly bnbNameInput: Locator;

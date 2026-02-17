@@ -22,6 +22,7 @@ import { BasePage } from '../BasePage.js';
  */
 export class AdminDashboardPage extends BasePage {
   protected readonly url = '/admin/rooms';
+  protected readonly readyLocator = this.page.getByRole('link', { name: 'Rooms' });
 
   // ─── Navigation Tabs ──────────────────────────────────────
   readonly roomsTab: Locator;

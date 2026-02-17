@@ -100,7 +100,7 @@ test.describe('Admin Login Flow', () => {
     // Expected: Hamburger menu should expand when clicked, making logout button accessible
     // Remove test.fail() when BUG-014 is fixed
     const viewport = page.viewportSize();
-    const isMobile = viewport ? viewport.width <= 375 && viewport.height <= 667 : false;
+    const isMobile = viewport ? viewport.width <= 767 : false;
     test.fail(isMobile, 'BUG-014'); // this test should fail on mobile
 
     const loginPage = new AdminLoginPage(page);

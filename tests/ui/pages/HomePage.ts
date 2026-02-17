@@ -16,6 +16,7 @@ import type { ContactFormData } from '../../fixtures/contact.data.js';
  */
 export class HomePage extends BasePage {
   protected readonly url = '/';
+  protected readonly readyLocator = this.page.locator('.navbar-brand');
 
   // ─── Navbar ───────────────────────────────────────────
   readonly navbar: Locator;

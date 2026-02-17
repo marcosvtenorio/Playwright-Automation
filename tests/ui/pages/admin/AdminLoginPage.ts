@@ -25,6 +25,7 @@ import type { AdminCredentials } from '../../../fixtures/auth.fixture.js';
  */
 export class AdminLoginPage extends BasePage {
   protected readonly url = '/admin';
+  protected readonly readyLocator = this.page.getByRole('button', { name: 'Login' });
 
   // ─── Form Elements ───────────────────────────────────────
   readonly loginHeading: Locator;

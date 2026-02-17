@@ -25,6 +25,7 @@ import type { RoomFormData } from '../../../types/room.types.js';
  */
 export class AdminRoomsPage extends BasePage {
   protected readonly url = '/admin/rooms';
+  protected readonly readyLocator = this.page.locator('p').filter({ hasText: 'Room #' }).first();
 
   // ─── Rooms List ────────────────────────────────────────────
   readonly roomsContainer: Locator;

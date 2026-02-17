@@ -54,6 +54,9 @@ test.describe('Home Page Structure', () => {
 
     await expect(homePage.roomsSectionHeading).toHaveText('Our Rooms');
 
+    // Wait for at least one room card to render (cards load async after navbar)
+    await homePage.roomCards.first().waitFor({ state: 'visible', timeout: 10000 });
+
     const roomCount = await homePage.getRoomCount();
     expect(roomCount).toBeGreaterThanOrEqual(1);
 

@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 /**
  * Base Page Object providing shared navigation and utility methods.
@@ -6,7 +6,8 @@ import { Page } from '@playwright/test';
  */
 export abstract class BasePage {
   constructor(protected readonly page: Page) {}
-
+  /** Override in subclasses with a locator that signals the page is ready */
+  protected abstract readonly readyLocator: Locator;
   protected abstract readonly url: string;
 
   async navigate(): Promise<void> {
@@ -18,7 +19,7 @@ export abstract class BasePage {
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
+    await this.readyLocator.waitFor({ state: 'visible', timeout: 15000 });
   }
 }
 

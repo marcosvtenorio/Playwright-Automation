@@ -60,6 +60,7 @@ import type { ReservationFormData } from '../../fixtures/booking.data.js';
  */
 export class BookingPage extends BasePage {
   protected readonly url: string;
+  protected readonly readyLocator = this.page.getByRole('button', { name: 'Reserve Now' });
 
   // ─── Breadcrumb ─────────────────────────────────────────
   readonly breadcrumb: Locator;

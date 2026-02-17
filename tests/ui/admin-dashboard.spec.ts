@@ -81,12 +81,12 @@ test.describe('Admin Dashboard', () => {
     });
 
     test('AD07 - valid: should navigate between admin tabs correctly', async ({ page }) => {
-      // BUG-014: Hamburger menu does not expand on mobile, preventing access to navigation tabs
+      // BUG-014: Hamburger menu does not expand on mobile/tablet, preventing access to navigation tabs
       // Expected: Hamburger menu should expand when clicked, making tabs accessible
       // Remove test.fail() when BUG-014 is fixed
       const viewport = page.viewportSize();
-      const isMobile = viewport ? viewport.width <= 375 && viewport.height <= 667 : false;
-      test.fail(isMobile, 'BUG-014');
+      const isSmallScreen = viewport ? viewport.width <= 767 : false;
+      test.fail(isSmallScreen, 'BUG-014');
       const dashboard = new AdminDashboardPage(page);
 
       // Test Rooms tab - uses navigateToRooms() which expands menu if needed

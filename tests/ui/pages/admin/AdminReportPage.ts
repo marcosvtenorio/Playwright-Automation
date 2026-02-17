@@ -22,6 +22,7 @@ import { BasePage } from '../BasePage.js';
  */
 export class AdminReportPage extends BasePage {
   protected readonly url = '/admin/report';
+  protected readonly readyLocator = this.page.getByRole('button', { name: 'Today' });
 
   // ─── Calendar Controls ─────────────────────────────────────
   readonly todayButton: Locator;
