@@ -62,6 +62,13 @@ test.describe('Reservation Form', () => {
       bookingPage.completeBooking(data),
     ]);
 
+    // BUG: 409-frontend-crash
+    // POST /api/booking returns 409 on date conflict → frontend crashes with
+    // "TypeError: Cannot read properties of undefined (reading 'length')"
+    // instead of showing a user-friendly error message.
+    // Ideal: show an error like "These dates are no longer available".
+    // Remove test.fail() when the bug is fixed.
+    test.fail(apiResponse.status() === 409, 'BUG-010');
     // 409 = orphaned booking from a previous failed run occupies these dates.
     // Skip honestly instead of failing — the booking flow itself is not broken.
     test.skip(apiResponse.status() === 409, 'Dates already booked (orphaned booking). Re-run to retry.');
@@ -100,7 +107,13 @@ test.describe('Reservation Form', () => {
       bookingPage.waitForBookingApiResponse(),
       bookingPage.completeBooking(data),
     ]);
-
+    // BUG: 409-frontend-crash
+    // POST /api/booking returns 409 on date conflict → frontend crashes with
+    // "TypeError: Cannot read properties of undefined (reading 'length')"
+    // instead of showing a user-friendly error message.
+    // Ideal: show an error like "These dates are no longer available".
+    // Remove test.fail() when the bug is fixed.
+    test.fail(apiResponse.status() === 409, 'BUG-010');
     test.skip(apiResponse.status() === 409, 'Dates already booked (orphaned booking). Re-run to retry.');
     expect(apiResponse.status()).toBe(201);
     await expect(bookingPage.confirmationHeading).toBeVisible({ timeout: 10000 });
@@ -129,7 +142,13 @@ test.describe('Reservation Form', () => {
       bookingPage.waitForBookingApiResponse(),
       bookingPage.completeBooking(data),
     ]);
-
+    // BUG: 409-frontend-crash
+    // POST /api/booking returns 409 on date conflict → frontend crashes with
+    // "TypeError: Cannot read properties of undefined (reading 'length')"
+    // instead of showing a user-friendly error message.
+    // Ideal: show an error like "These dates are no longer available".
+    // Remove test.fail() when the bug is fixed.
+    test.fail(apiResponse.status() === 409, 'BUG-010');
     test.skip(apiResponse.status() === 409, 'Dates already booked (orphaned booking). Re-run to retry.');
     expect(apiResponse.status()).toBe(201);
     await expect(bookingPage.confirmationHeading).toBeVisible({ timeout: 10000 });

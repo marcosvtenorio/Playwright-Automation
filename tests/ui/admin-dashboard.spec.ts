@@ -177,9 +177,7 @@ test.describe('Admin Dashboard', () => {
       await reportPage.navigate();
 
       // Wait for page to be fully loaded
-      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
-        // Network idle may not always be reached, continue anyway
-      });
+      await page.waitForLoadState('domcontentloaded');
 
       // Verify calendar table is visible
       await expect(reportPage.calendarTable).toBeVisible({ timeout: 10000 });
