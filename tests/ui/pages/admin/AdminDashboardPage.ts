@@ -80,9 +80,51 @@ export class AdminDashboardPage extends BasePage {
 
   /** Logout and return to home page */
   async logout(): Promise<void> {
+    // Expand menu if needed (mobile/tablet) before clicking logout
+    await this.expandHamburgerMenuIfNeeded();
+
+    // Verify logout button is accessible before attempting to click
+    // This fails fast if menu didn't expand (BUG-014), instead of waiting 30s for timeout
+    const isLogoutVisible = await this.logoutButton.isVisible({ timeout: 2000 }).catch(() => false);
+    if (!isLogoutVisible) {
+      throw new Error(
+        'Logout button is not accessible. Hamburger menu may not have expanded (BUG-014). ' +
+        'Button exists in DOM but is not visible.'
+      );
+    }
+
     await this.logoutButton.click();
     // Logout redirects to home page (/), not back to /admin
     await this.page.waitForURL('**/', { timeout: 5000 });
+  }
+
+  // ─── Private Helpers ─────────────────────────────────────
+
+  /**
+   * Expand hamburger menu if visible and collapsed (mobile/tablet responsive behavior).
+   * This is a private helper used by public methods that need to access menu items.
+   */
+  private async expandHamburgerMenuIfNeeded(): Promise<void> {
+    const hamburgerButton = this.page.getByRole('button', { name: 'Toggle navigation' });
+    const isHamburgerVisible = await hamburgerButton.isVisible().catch(() => false);
+
+    if (isHamburgerVisible) {
+      const navbar = this.page.locator('#navbarSupportedContent');
+      const hasShowClass = await navbar.evaluate((el) => el.classList.contains('show')).catch(() => false);
+
+      if (!hasShowClass) {
+        await hamburgerButton.click();
+        await this.page.waitForFunction(
+          () => {
+            const nav = document.querySelector('#navbarSupportedContent');
+            return nav && nav.classList.contains('show');
+          },
+          { timeout: 3000 }
+        ).catch(() => {
+          return this.page.waitForTimeout(500);
+        });
+      }
+    }
   }
 
   // ─── Validation Helpers ───────────────────────────────────
@@ -91,5 +133,25 @@ export class AdminDashboardPage extends BasePage {
   async isOnDashboard(): Promise<boolean> {
     const url = this.page.url();
     return url.includes('/admin/') && !url.endsWith('/admin');
+  }
+
+  /**
+   * Verify dashboard is accessible and key elements are available.
+   * Handles responsive design: expands hamburger menu on mobile/tablet if needed.
+   * This method encapsulates all responsive logic, so tests don't need to worry about viewport.
+   */
+  async verifyDashboardAccessible(): Promise<void> {
+    // First, verify we're on dashboard (URL check is most reliable)
+    const isOnDashboard = await this.isOnDashboard();
+    if (!isOnDashboard) {
+      throw new Error('Not on dashboard. Current URL: ' + this.page.url());
+    }
+
+    // Expand menu if needed (mobile/tablet)
+    await this.expandHamburgerMenuIfNeeded();
+
+    // Verify at least one key element is accessible (logout button is most critical)
+    // This confirms we're logged in and dashboard is functional
+    await this.logoutButton.waitFor({ state: 'visible', timeout: 5000 });
   }
 }
