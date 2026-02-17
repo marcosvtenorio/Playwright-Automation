@@ -82,13 +82,8 @@ export class AdminDashboardPage extends BasePage {
         'Tab exists in DOM but is not visible.'
       );
     }
-    // Use Promise.all to click and wait for navigation simultaneously
-    await Promise.all([
-      this.page.waitForURL(/\/admin\/report/, { timeout: 10000 }),
-      this.reportTab.click(),
-    ]);
-    // Also wait a moment for the page to fully render
-    await this.page.waitForTimeout(500);
+    await this.reportTab.click();
+    await this.page.waitForURL(/\/admin\/report/, { timeout: 5000 });
   }
 
   /** Navigate to Branding tab */

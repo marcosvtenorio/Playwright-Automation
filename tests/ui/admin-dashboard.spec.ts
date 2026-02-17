@@ -44,7 +44,7 @@ test.describe('Admin Dashboard', () => {
   // ─── Rooms Management ──────────────────────────────────────
 
   test.describe('Rooms Management', () => {
-    test('AD05 - valid: should display rooms list structure', async ({ page }) => {
+    test('AD16 - valid: should display rooms list structure', async ({ page }) => {
       const roomsPage = new AdminRoomsPage(page);
       await roomsPage.navigate();
 
