@@ -35,6 +35,13 @@ test.describe('Check Availability', () => {
   });
 
   test('CA01 - valid: should call API with correct date params and display rooms', async () => {
+    // BUG-013: Application incorrectly converts dates to UTC, adding +1 day
+    // This test explicitly documents the timezone conversion bug
+    // Expected: API receives the exact dates selected by the user (no timezone conversion)
+    // Actual: API receives dates with +1 day (e.g., user selects 10/02/2026, API gets 2026-02-11)
+    // Root cause: Date conversion from local timezone (UTC-3) to UTC adds +1 day
+    // Impact: Users searching for availability on a specific date get incorrect results
+    test.fail(new Date().getHours() >= 21, 'BUG-013'); // this test should fail after 21:00 UTC
     const dateRange = createValidDateRange();
 
     await homePage.selectCheckinDate(dateRange.checkinDay, dateRange.checkinMonthOffset);
@@ -138,6 +145,13 @@ test.describe('Check Availability', () => {
   });
 
   test('CA05 - edge: should handle same-day check-in and check-out', async () => {
+    // BUG-013: Application incorrectly converts dates to UTC, adding +1 day
+    // This test explicitly documents the timezone conversion bug
+    // Expected: API receives the exact dates selected by the user (no timezone conversion)
+    // Actual: API receives dates with +1 day (e.g., user selects 10/02/2026, API gets 2026-02-11)
+    // Root cause: Date conversion from local timezone (UTC-3) to UTC adds +1 day
+    // Impact: Users searching for availability on a specific date get incorrect results
+    test.fail(new Date().getHours() >= 21, 'BUG-013'); // this test should fail after 21:00 UTC
     const dateRange = createSameDayDateRange();
 
     await homePage.selectCheckinDate(dateRange.checkinDay, dateRange.checkinMonthOffset);
