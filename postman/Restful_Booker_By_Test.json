@@ -1,0 +1,1020 @@
+{
+  "info": {
+    "_postman_id": "c2d3e4f5-a6b7-8901-cdef-ab1234567892",
+    "name": "Restful Booker — By Test Case",
+    "description": "Restful Booker API collection organized by test case ID.\n\nMaps 1:1 to Playwright tests in:\n- tests/api/auth.spec.ts (AU01-AU02)\n- tests/api/booking.spec.ts (BK01-BK13)\n- tests/api/booking.lifecycle.spec.ts (LC01-LC02)\n\nKnown Bugs:\n- BUG-001: POST /booking returns 200 instead of 201\n- BUG-002: Accepts bookings with empty required fields\n- BUG-003: Accepts bookings with negative totalprice\n- BUG-004: Accepts checkout before checkin\n- BUG-005: PUT accepts invalid data\n- BUG-006: PATCH accepts invalid data\n- BUG-007: POST /auth returns 200 instead of 401 for invalid credentials\n- BUG-008: DELETE returns 201 instead of 204; GET /ping returns 201 instead of 200",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication Tests (AU)",
+      "description": "Tests: AU01-AU02\nSpec: tests/api/auth.spec.ts",
+      "item": [
+        {
+          "name": "AU01 - valid: should authenticate with valid admin credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('AU01 — Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('AU01 — Response contains valid token', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('token');",
+                  "    pm.expect(body.token).to.be.a('string');",
+                  "    pm.expect(body.token.length).to.be.greaterThan(0);",
+                  "    pm.environment.set('token', body.token);",
+                  "});",
+                  "",
+                  "pm.test('AU01 — Schema: token is string', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(typeof body.token).to.eql('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth",
+              "host": ["{{base_url}}"],
+              "path": ["auth"]
+            },
+            "description": "AU01: Authenticate with valid admin credentials.\nExpected: 200 with {token: string}."
+          }
+        },
+        {
+          "name": "AU02 - invalid: should reject invalid credentials (BUG-007)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-007: API returns 200 instead of 401",
+                  "pm.test('AU02 — Status code is 200 (BUG-007: should be 401)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('AU02 — Response contains reason: Bad credentials', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('reason');",
+                  "    pm.expect(body.reason).to.eql('Bad credentials');",
+                  "});",
+                  "",
+                  "pm.test('AU02 — No token in response', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.token).to.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"invalid\",\n  \"password\": \"invalid\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth",
+              "host": ["{{base_url}}"],
+              "path": ["auth"]
+            },
+            "description": "AU02: Attempt auth with invalid credentials.\nBUG-007: Returns 200 with {reason} instead of 401."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Booking CRUD Tests (BK)",
+      "description": "Tests: BK01-BK13\nSpec: tests/api/booking.spec.ts\n\nIncludes BVA (Boundary Value Analysis) for create, and CRUD operations.",
+      "item": [
+        {
+          "name": "BK01 - valid: should create booking with valid data (BUG-001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-001: Returns 200 instead of 201",
+                  "pm.test('BK01 — Status is 200 (BUG-001: should be 201)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK01 — Response has bookingid and booking details', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "    pm.expect(body.bookingid).to.be.greaterThan(0);",
+                  "    pm.expect(body.booking.firstname).to.eql('John');",
+                  "    pm.expect(body.booking.lastname).to.eql('Doe');",
+                  "    pm.expect(body.booking.totalprice).to.eql(111);",
+                  "    pm.expect(body.booking.depositpaid).to.eql(true);",
+                  "    pm.environment.set('booking_id', body.bookingid);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"John\",\n  \"lastname\": \"Doe\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-06-10\",\n    \"checkout\": \"2026-06-13\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK01: Create booking with valid data.\nBUG-001: POST returns 200 instead of 201."
+          }
+        },
+        {
+          "name": "BK02 - valid: should create booking with minimum boundary values (BUG-001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-001: Returns 200 instead of 201",
+                  "pm.test('BK02 — Status is 200 (BUG-001: should be 201)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK02 — Min boundary booking created', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "    pm.expect(body.bookingid).to.be.greaterThan(0);",
+                  "    pm.expect(body.booking.firstname).to.eql('A');",
+                  "    pm.expect(body.booking.lastname).to.eql('B');",
+                  "    pm.expect(body.booking.totalprice).to.eql(0);",
+                  "    pm.expect(body.booking.depositpaid).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"A\",\n  \"lastname\": \"B\",\n  \"totalprice\": 0,\n  \"depositpaid\": false,\n  \"bookingdates\": {\n    \"checkin\": \"2026-07-10\",\n    \"checkout\": \"2026-07-13\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK02: Create booking with minimum boundary values (BVA).\nfirstname=1char, lastname=1char, totalprice=0, depositpaid=false."
+          }
+        },
+        {
+          "name": "BK03 - valid: should create booking with maximum boundary values (BUG-001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-001: Returns 200 instead of 201",
+                  "pm.test('BK03 — Status is 200 (BUG-001: should be 201)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK03 — Max boundary booking created', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "    pm.expect(body.bookingid).to.be.greaterThan(0);",
+                  "    pm.expect(body.booking.totalprice).to.eql(999999);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"lastname\": \"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\",\n  \"totalprice\": 999999,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-08-10\",\n    \"checkout\": \"2026-08-13\"\n  },\n  \"additionalneeds\": \"Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need Need \"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK03: Create booking with maximum boundary values (BVA).\nfirstname=50chars, lastname=50chars, totalprice=999999, additionalneeds=200chars."
+          }
+        },
+        {
+          "name": "BK04 - invalid: should reject empty required fields (BUG-002)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-002: API accepts empty fields, returns 200 instead of 400",
+                  "pm.test('BK04 — Status is 200 (BUG-002: should be 400)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK04 — BUG: booking created despite empty names', function () {",
+                  "    const body = pm.response.json();",
+                  "    // This should NOT happen — API should reject empty fields",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"\",\n  \"lastname\": \"\",\n  \"totalprice\": 100,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-09-10\",\n    \"checkout\": \"2026-09-13\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK04: Attempt to create booking with empty firstname and lastname.\nBUG-002: API accepts and returns 200 instead of 400."
+          }
+        },
+        {
+          "name": "BK05 - invalid: should reject negative totalprice (BUG-003)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-003: API accepts negative price, returns 200 instead of 400",
+                  "pm.test('BK05 — Status is 200 (BUG-003: should be 400)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK05 — BUG: booking created with negative price', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "    pm.expect(body.booking.totalprice).to.eql(-1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"John\",\n  \"lastname\": \"Doe\",\n  \"totalprice\": -1,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-06-10\",\n    \"checkout\": \"2026-06-13\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK05: Attempt to create booking with negative totalprice.\nBUG-003: API accepts and returns 200 instead of 400."
+          }
+        },
+        {
+          "name": "BK06 - invalid: should reject invalid dates (BUG-004)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-004: API accepts checkout < checkin, returns 200 instead of 400",
+                  "pm.test('BK06 — Status is 200 (BUG-004: should be 400)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK06 — BUG: booking created with invalid date range', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"John\",\n  \"lastname\": \"Doe\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2025-06-03\",\n    \"checkout\": \"2025-06-01\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK06: Attempt to create booking where checkout is before checkin.\nBUG-004: API accepts and returns 200 instead of 400."
+          }
+        },
+        {
+          "name": "BK07 - valid: should retrieve booking by ID after creation",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: Create a booking to retrieve",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/booking',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            firstname: 'Retrieve',",
+                  "            lastname: 'Test',",
+                  "            totalprice: 150,",
+                  "            depositpaid: true,",
+                  "            bookingdates: { checkin: '2026-06-10', checkout: '2026-06-13' }",
+                  "        })",
+                  "    }",
+                  "}, function (err, res) {",
+                  "    const body = res.json();",
+                  "    pm.environment.set('booking_id', body.bookingid);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('BK07 — Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK07 — Response has correct booking properties', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('firstname');",
+                  "    pm.expect(body).to.have.property('lastname');",
+                  "    pm.expect(body).to.have.property('totalprice');",
+                  "    pm.expect(body).to.have.property('depositpaid');",
+                  "    pm.expect(body).to.have.property('bookingdates');",
+                  "    pm.expect(body.firstname).to.eql('Retrieve');",
+                  "    pm.expect(body.lastname).to.eql('Test');",
+                  "});",
+                  "",
+                  "pm.test('BK07 — Date format is YYYY-MM-DD', function () {",
+                  "    const body = pm.response.json();",
+                  "    const dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;",
+                  "    pm.expect(body.bookingdates.checkin).to.match(dateRegex);",
+                  "    pm.expect(body.bookingdates.checkout).to.match(dateRegex);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "BK07: Create booking, then retrieve it by ID.\nValidates all fields match, schema conforms."
+          }
+        },
+        {
+          "name": "BK08 - valid: should list all bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('BK08 — Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK08 — Response is array', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('BK08 — Items have bookingid property', function () {",
+                  "    const body = pm.response.json();",
+                  "    if (body.length > 0) {",
+                  "        pm.expect(body[0]).to.have.property('bookingid');",
+                  "        pm.expect(body[0].bookingid).to.be.a('number');",
+                  "        pm.expect(body[0].bookingid).to.be.greaterThan(0);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "BK08: List all bookings. Returns array of {bookingid} objects."
+          }
+        },
+        {
+          "name": "BK09 - valid: should update booking with PUT",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: Create a booking and authenticate",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/booking',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            firstname: 'Original',",
+                  "            lastname: 'Name',",
+                  "            totalprice: 111,",
+                  "            depositpaid: true,",
+                  "            bookingdates: { checkin: '2026-06-10', checkout: '2026-06-13' },",
+                  "            additionalneeds: 'Breakfast'",
+                  "        })",
+                  "    }",
+                  "}, function (err, res) {",
+                  "    const body = res.json();",
+                  "    pm.environment.set('booking_id', body.bookingid);",
+                  "});",
+                  "",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/auth',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            username: pm.environment.get('username'),",
+                  "            password: pm.environment.get('password')",
+                  "        })",
+                  "    }",
+                  "}, function (err, res) {",
+                  "    const body = res.json();",
+                  "    pm.environment.set('token', body.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('BK09 — Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK09 — Updated fields reflected', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.firstname).to.eql('Updated');",
+                  "    pm.expect(body.lastname).to.eql('Name');",
+                  "    pm.expect(body.totalprice).to.eql(222);",
+                  "    pm.expect(body.depositpaid).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Updated\",\n  \"lastname\": \"Name\",\n  \"totalprice\": 222,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-06-10\",\n    \"checkout\": \"2026-06-13\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "BK09: Full update of booking via PUT.\nRequires Cookie auth. Pre-request creates booking + authenticates."
+          }
+        },
+        {
+          "name": "BK10 - valid: should partially update booking with PATCH",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: Create a booking and authenticate",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/booking',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            firstname: 'Original',",
+                  "            lastname: 'Doe',",
+                  "            totalprice: 111,",
+                  "            depositpaid: true,",
+                  "            bookingdates: { checkin: '2026-06-10', checkout: '2026-06-13' },",
+                  "            additionalneeds: 'Breakfast'",
+                  "        })",
+                  "    }",
+                  "}, function (err, res) {",
+                  "    const body = res.json();",
+                  "    pm.environment.set('booking_id', body.bookingid);",
+                  "});",
+                  "",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/auth',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            username: pm.environment.get('username'),",
+                  "            password: pm.environment.get('password')",
+                  "        })",
+                  "    }",
+                  "}, function (err, res) {",
+                  "    const body = res.json();",
+                  "    pm.environment.set('token', body.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('BK10 — Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK10 — Patched field updated', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.firstname).to.eql('Patched');",
+                  "});",
+                  "",
+                  "pm.test('BK10 — Other fields unchanged', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.lastname).to.eql('Doe');",
+                  "    pm.expect(body.totalprice).to.eql(111);",
+                  "    pm.expect(body.depositpaid).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Patched\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "BK10: Partial update of booking via PATCH (only firstname).\nValidates patched field changes, others stay unchanged."
+          }
+        },
+        {
+          "name": "BK11 - invalid: should reject PUT with invalid data (BUG-005)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-005: API accepts invalid data in PUT, returns 200 instead of 400",
+                  "pm.test('BK11 — Status is 200 (BUG-005: should be 400)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK11 — BUG: updated with negative price', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.totalprice).to.eql(-1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"John\",\n  \"lastname\": \"Doe\",\n  \"totalprice\": -1,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-06-10\",\n    \"checkout\": \"2026-06-13\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "BK11: PUT with negative totalprice.\nBUG-005: API accepts and returns 200 instead of 400."
+          }
+        },
+        {
+          "name": "BK12 - invalid: should reject PATCH with invalid data (BUG-006)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-006: API accepts invalid data in PATCH, returns 200 instead of 400",
+                  "pm.test('BK12 — Status is 200 (BUG-006: should be 400)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK12 — BUG: updated with empty firstname', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.firstname).to.eql('');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "BK12: PATCH with empty firstname.\nBUG-006: API accepts and returns 200 instead of 400."
+          }
+        },
+        {
+          "name": "BK13 - valid: should retrieve booking by ID + test non-existent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('BK13 — Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('BK13 — Response has booking properties', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('firstname');",
+                  "    pm.expect(body).to.have.property('lastname');",
+                  "    pm.expect(body).to.have.property('totalprice');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "BK13: Retrieve booking by ID using helper function.\nAlso tests 404 for non-existent booking ID (run manually with ID 999999)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lifecycle Tests (LC)",
+      "description": "Tests: LC01-LC02\nSpec: tests/api/booking.lifecycle.spec.ts\n\nEnd-to-end lifecycle: Create → Read → Update → Partial Update → Delete.",
+      "item": [
+        {
+          "name": "LC01 - valid: full CRUD lifecycle (BUG-001)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Authenticate for lifecycle operations",
+                  "pm.sendRequest({",
+                  "    url: pm.environment.get('base_url') + '/auth',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json' },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            username: pm.environment.get('username'),",
+                  "            password: pm.environment.get('password')",
+                  "        })",
+                  "    }",
+                  "}, function (err, res) {",
+                  "    const body = res.json();",
+                  "    pm.environment.set('token', body.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Step 1: Create",
+                  "// BUG-001: Returns 200 instead of 201",
+                  "pm.test('LC01 — Step 1: Create booking (status 200, BUG-001: should be 201)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('LC01 — Step 1: Booking created with correct data', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.have.property('bookingid');",
+                  "    pm.expect(body.booking.firstname).to.eql('Lifecycle');",
+                  "    pm.expect(body.booking.lastname).to.eql('Test');",
+                  "    pm.environment.set('booking_id', body.bookingid);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Lifecycle\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 111,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-06-10\",\n    \"checkout\": \"2026-06-13\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking",
+              "host": ["{{base_url}}"],
+              "path": ["booking"]
+            },
+            "description": "LC01 Step 1: Create a booking.\nFull lifecycle: Create → Read → PUT → PATCH → Delete.\nRun subsequent steps (GET, PUT, PATCH, DELETE) manually using {{booking_id}}."
+          }
+        },
+        {
+          "name": "LC01 - Step 2: Read created booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('LC01 — Step 2: Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('LC01 — Step 2: Booking matches created data', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.firstname).to.eql('Lifecycle');",
+                  "    pm.expect(body.lastname).to.eql('Test');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "LC01 Step 2: Read the booking created in Step 1."
+          }
+        },
+        {
+          "name": "LC01 - Step 3: Update with PUT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('LC01 — Step 3: Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('LC01 — Step 3: Updated fields reflected', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.firstname).to.eql('Updated');",
+                  "    pm.expect(body.totalprice).to.eql(222);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Updated\",\n  \"lastname\": \"Test\",\n  \"totalprice\": 222,\n  \"depositpaid\": true,\n  \"bookingdates\": {\n    \"checkin\": \"2026-06-10\",\n    \"checkout\": \"2026-06-13\"\n  },\n  \"additionalneeds\": \"Breakfast\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "LC01 Step 3: Full update via PUT."
+          }
+        },
+        {
+          "name": "LC01 - Step 4: Partial update with PATCH",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('LC01 — Step 4: Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('LC01 — Step 4: Patched field changed', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.firstname).to.eql('Patched');",
+                  "});",
+                  "",
+                  "pm.test('LC01 — Step 4: Other fields unchanged', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.totalprice).to.eql(222);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Patched\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "LC01 Step 4: Partial update via PATCH."
+          }
+        },
+        {
+          "name": "LC01 - Step 5: Delete booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-008: DELETE returns 201 instead of 204",
+                  "pm.test('LC01 — Step 5: Status is 201 (BUG-008: should be 204)', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('LC01 — Cleanup booking_id', function () {",
+                  "    pm.environment.unset('booking_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Cookie", "value": "token={{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/booking/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["booking", "{{booking_id}}"]
+            },
+            "description": "LC01 Step 5: Delete the booking.\nBUG-008: Returns 201 instead of 204."
+          }
+        },
+        {
+          "name": "LC02 - valid: should ping health check endpoint (BUG-008)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// BUG-008: GET /ping returns 201 instead of 200",
+                  "pm.test('LC02 — Status is 201 (BUG-008: should be 200)', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('LC02 — Response body is \"Created\"', function () {",
+                  "    pm.expect(pm.response.text()).to.eql('Created');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ping",
+              "host": ["{{base_url}}"],
+              "path": ["ping"]
+            },
+            "description": "LC02: Health check endpoint.\nBUG-008: Returns 201 Created instead of 200 OK."
+          }
+        }
+      ]
+    }
+  ]
+}
+

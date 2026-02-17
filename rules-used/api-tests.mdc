@@ -1,0 +1,235 @@
+---
+alwaysApply: true
+---
+
+# 🔌 API Tests Rules
+
+> Rules for all API test automation against the **Restful Booker API**.
+> Ensures consistency, proper validation, and alignment with BVA methodology.
+
+---
+
+## ⛔ Human Approval Gate
+
+**CRITICAL: The AI agent MUST NOT write or modify code without explicit verbal approval.**
+
+- Every proposed change must be **described in natural language first**
+- The engineer reviews, approves, adjusts, or rejects before any code is written
+- This prevents AI-slop — no bloated refactors, no unnecessary files, no "improvements" without consent
+- If unsure whether a change is approved, **ask — don't assume**
+
+---
+
+## 🚧 Critical Boundaries
+
+**WHEN WORKING ON /API, NEVER MODIFY FOLDERS IN /UI**
+
+- API tests and UI tests are **completely separate concerns**
+- Changes to API test structure must not affect UI test files
+- If a change is needed in both, make **separate, independent changes**
+- This ensures test isolation and prevents unintended side effects
+
+---
+
+## 🏗️ Architecture
+
+### Test Structure
+- Use `request` fixture from Playwright for all HTTP requests
+- Tests must be **independent** — no shared mutable state between tests
+- Each test should be able to **run in isolation**
+- Use `test.describe()` to group related tests by endpoint or functionality
+
+### File Organization
+
+```
+tests/api/
+├── {endpoint}.spec.ts          # Test files (auth.spec.ts, booking.spec.ts)
+├── helpers/
+│   ├── api-helper.ts           # Auth, cleanup, date generation utilities
+│   └── schema-helper.ts        # Zod schema validation helpers
+├── schemas/
+│   └── {entity}.schema.ts      # Zod schemas for validation
+└── constants/
+    └── error-messages.ts       # Expected API error messages
+```
+
+---
+
+## 🔒 Type Definitions
+
+**ALL TYPES MUST LIVE IN `tests/types/`**
+
+- All interfaces and types MUST be defined in `tests/types/`
+- Use existing types: `booking.types.ts`, `room.types.ts`
+- Never define types inline in test files or helpers
+- Import using: `import type { TypeName } from '../../types/entity.types.js'`
+
+---
+
+## 📦 Fixture Factories
+
+**ALL TEST DATA MUST COME FROM FACTORIES — NEVER INLINE**
+
+| Pattern | Example |
+|---------|---------|
+| ✅ Factory | `const authData = createValidAuthCredentials();` |
+| ✅ Factory | `const bookingData = createValidBookingRequest();` |
+| ❌ Inline | `const authData = {username: 'admin', password: 'pass'};` |
+| ❌ Inline | `const bookingData = {firstname: 'John', ...};` |
+
+- Factories live in `tests/fixtures/` — `auth.fixture.ts`, `booking.data.ts`, etc.
+- Follow pattern: `create{Scenario}{Entity}(overrides?)`
+- Use `Partial<T>` spread for overrides: `{ ...defaults, ...overrides }`
+- Comment **exact character lengths** next to field values for BVA clarity
+- Organize by BVA categories: valid, min, max, empty, below-min, above-max
+
+---
+
+## 📅 Dynamic Data Generation
+
+- Use `generateFutureDate(testSlot, day)` from `api-helper.ts` for dates
+- Each test gets its own month offset: `month + 3 + testSlot`
+- Use `generateDateRange(testSlot, days)` for booking date ranges
+- **Never hardcode dates** — always use dynamic generation
+
+### Cleanup Strategy
+
+- Tests that create resources **MUST clean up** via helper functions
+- Use `deleteBooking(request, bookingId)` for single cleanup
+- Use `cleanupBookings(request, bookingIds[])` for batch cleanup
+- All cleanup functions are **best-effort** — errors are swallowed
+- Store created resource IDs in arrays for tracking
+
+---
+
+## ✅ Schema Validation (Zod)
+
+- All API responses **MUST** be validated using Zod schemas
+- Schemas live in `tests/api/schemas/{entity}.schema.ts`
+- Use `schema.parse(body)` directly — Zod throws detailed errors on failure
+- Create schemas for: request payloads, success responses, error responses
+
+### Required Validations per Test
+
+| Layer | Validation | Example |
+|-------|-----------|---------|
+| Status code | `expect(response.status()).toBe(XXX)` | `expect(response.status()).toBe(200)` |
+| Schema | `schema.parse(body)` | `bookingCreateResponseSchema.parse(body)` |
+| Business logic | Field values match request | `expect(body.firstname).toBe(data.firstname)` |
+| Error messages | Exact message matching | `expect(body.reason).toBe('Bad credentials')` |
+
+---
+
+## 🏷️ Naming Convention
+
+### Test IDs
+Format: `XX## - valid/invalid/edge: description`
+
+| Prefix | Domain | Spec File |
+|--------|--------|-----------|
+| `AU` | Authentication | `auth.spec.ts` |
+| `BK` | Booking CRUD + BVA | `booking.spec.ts` |
+| `LC` | Lifecycle (E2E) | `booking.lifecycle.spec.ts` |
+
+### Helper Functions
+- Descriptive verb prefixes: `authenticate*`, `delete*`, `get*`, `generate*`, `create*`
+
+---
+
+## 📐 Test Structure Pattern — Arrange-Act-Assert
+
+```typescript
+test('BK01 - valid: should create booking with valid data', async ({ request }) => {
+  // Arrange
+  const bookingData = createValidBookingRequest();
+
+  // Act
+  const response = await request.post('/booking', { data: bookingData });
+
+  // Assert
+  expect(response.status()).toBe(201);
+  const body = await response.json();
+  bookingCreateResponseSchema.parse(body);
+  expect(body.booking.firstname).toBe(bookingData.firstname);
+
+  // Cleanup
+  await deleteBooking(request, body.bookingid);
+});
+```
+
+---
+
+## 🐛 Known Bugs Documentation
+
+- Use `test.fail(true, 'BUG-XXX')` for tests documenting known bugs
+- Write tests with the **ideal behavior** — not the buggy behavior
+- When the bug is fixed, Playwright auto-detects it → remove `test.fail()`
+- **Never skip known bugs** — `test.fail()` > `test.skip()`
+
+---
+
+## 📊 Boundary Value Analysis (BVA)
+
+### Required Coverage per Field
+
+| Category | Description | Example |
+|----------|-------------|---------|
+| Exact minimum | Field at min length | `firstname: 'Ana'` — 3 chars |
+| Exact maximum | Field at max length | `lastname: repeatToLength('B', 30)` — 30 chars |
+| Below minimum | Min - 1 | `phone: '1234567890'` — 10 chars (min is 11) |
+| Above maximum | Max + 1 | `phone: '1234567890123456789012'` — 22 chars (max is 21) |
+| Valid within range | Typical value | `firstname: 'Marcos'` — 6 chars |
+| Empty | Blank string | `firstname: ''` — 0 chars |
+
+### Character Length Comments (Required)
+
+```typescript
+firstname: 'Ana',               // 3 chars (exact minimum)
+lastname: repeatToLength('B', 30), // 30 chars (exact maximum)
+phone: '1234567890',            // 10 chars (below min: 11)
+```
+
+---
+
+## 🔐 Authentication
+
+- Use `authenticateAdmin(request)` helper — returns token string or null
+- Token is used in Cookie header: `headers: { Cookie: \`token=${token}\` }`
+- Handle auth failures gracefully — never crash on missing token
+- Auth is required for: `PUT`, `PATCH`, `DELETE` operations
+
+---
+
+## 📝 Spec File Documentation
+
+Every spec file MUST have a JSDoc header:
+
+```typescript
+/**
+ * [Category] API Tests
+ *
+ * Strategy:
+ * - What is being tested and why
+ * - Testing approach (BVA, happy path, edge cases)
+ *
+ * Business Impact:
+ * - What breaks if these tests fail
+ * - Revenue/customer impact
+ *
+ * API Behavior:
+ * - Endpoints tested
+ * - Expected status codes
+ * - Known bugs or quirks (BUG-XXX)
+ */
+```
+
+---
+
+## ⚡ Performance & Independence
+
+- Tests should complete in < 30s each
+- Use **parallel execution** when possible
+- Avoid unnecessary waits or delays
+- Each test runs **standalone** — no inter-test dependencies
+- Cleanup must be robust — handle failures gracefully
+- In shared environments, acknowledge potential race conditions

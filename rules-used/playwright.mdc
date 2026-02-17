@@ -1,0 +1,107 @@
+---
+alwaysApply: true
+---
+
+# 🎭 Playwright Project Rules
+
+> These rules govern all Playwright test automation in this project.
+> They ensure consistency, maintainability, and alignment with Voidr's AI Test Engineer standards.
+
+---
+
+## ⛔ Human Approval Gate
+
+**CRITICAL: The AI agent MUST NOT write or modify code without explicit verbal approval.**
+
+- Every proposed change must be **described in natural language first**
+- The engineer reviews, approves, adjusts, or rejects before any code is written
+- This prevents AI-slop (low-quality, bloated, or unnecessary code)
+- No file creation, no refactoring, no "improvements" without explicit consent
+- If unsure whether a change is approved, **ask — don't assume**
+
+---
+
+## 🔤 Language
+
+- TypeScript only — strict typing required
+- No `any` types — use proper interfaces from `tests/types/`
+- All types centralized in `tests/types/` and exported via barrel files
+
+## 🏗️ Architecture — Page Object Model
+
+- **Tests must not contain selectors** — selectors live inside Page Objects
+- **Business-level methods only** — no low-level `click()` or `fill()` exposed to tests
+- Every Page Object extends `BasePage` with a `readyLocator` for page-ready detection
+- Page Objects encapsulate scrolling, waiting, and interaction logic
+
+## ✅ Assertions
+
+- Use Playwright `expect` — prefer `toHaveText()`, `toBeVisible()`, `toContainText()`
+- Avoid manual waits (`waitForTimeout`) — use locator-based waits instead
+- Use `response.status()` (method call), never `.status` (property)
+
+## 🧪 Test Design
+
+- Tests must be **independent** — no shared mutable state between tests
+- Extract all test data into **fixture factories** (`tests/fixtures/`)
+- Follow **Arrange → Act → Assert → Cleanup** pattern
+- Tests that create resources **must clean up** via helper functions
+
+## 🐛 Known Bugs
+
+- Use `test.fail()` for tests that document known application bugs
+- Write the test with the **IDEAL (expected) behavior**, not the buggy behavior
+- Add a comment referencing the bug ID (e.g. `BUG-010`)
+- When the bug is fixed, `test.fail()` auto-detects it → remove annotation
+- **Never leave a test permanently red** — `test.fail()` keeps the pipeline green
+
+## 🏷️ Naming Convention
+
+| Element | Pattern | Example |
+|---------|---------|---------|
+| Test IDs | `XX## - valid/invalid/edge: description` | `BK01 - valid: should create booking` |
+| UI Prefixes | BF, CT, CA, RF, RS, AD, VR | `BF01`, `RS05`, `VR03` |
+| API Prefixes | AU, BK, LC | `AU01`, `BK13`, `LC02` |
+| Fixture factories | `create{Scenario}{Entity}(overrides?)` | `createMinBoundaryReservation()` |
+| Page Objects | PascalCase matching the page | `HomePage`, `AdminDashboardPage` |
+
+## 🔗 API Intercept Pattern
+
+- Page Object intercept methods MUST return the native Playwright `Response`
+- For SPA navigation: use **sequential** `click()` → `waitForURL()` (not `Promise.all`)
+- SPAs use `history.pushState` — `Promise.all` causes race conditions
+
+## 📦 Fixture Factories
+
+- Use `Partial<T>` spread for overrides: `{ ...defaults, ...overrides }`
+- Comment the **exact char length** next to each field value for BVA traceability
+- Use `repeatToLength(base, length)` for generating strings of exact length
+- Organize by BVA categories: valid, min boundary, max boundary, empty, below-min, above-max
+
+## ✔️ Validation Assertions
+
+- Use `errors.some(e => e.includes('exact message'))` for error message matching
+- Always include **negative assertions** to verify errors that should NOT appear
+- Validate fixture data lengths before submitting: `expect(data.field.length).toBe(N)`
+
+## 📅 Dynamic Test Data
+
+- Use `futureDate(testSlot, day)` — offset: `month + 3 + testSlot`
+- Each test gets its own month to prevent inter-test collisions
+- Tests that create bookings MUST clean up via `DELETE /api/booking/:id`
+- `deleteBooking()` authenticates first — the standalone `request` fixture has no cookies
+- Use `try/catch` for best-effort cleanup (swallow errors)
+
+## 📝 Spec File Documentation
+
+Every spec file MUST have a JSDoc header with:
+- **Strategy** — what is being tested and why
+- **Business impact** — what breaks if this fails
+- **API behavior** — endpoints, status codes, known quirks
+
+## 🎯 Locator Best Practices
+
+- Use `exact: true` in `getByRole` when multiple elements share similar names
+- Use `.first()` when multiple elements may match to avoid strict-mode violations
+- Prefer `data-testid` → `getByRole` → CSS selectors (in order of preference)
+- Use `{ hasText: '...' }` filter to scope locators to specific content

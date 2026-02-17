@@ -1,0 +1,64 @@
+---
+alwaysApply: true
+---
+
+# 🎯 Test Strategy Guidelines
+
+> High-level strategy governing all test planning decisions in this project.
+> Aligned with the evaluation criteria: business-critical focus, quality over quantity.
+
+---
+
+## ⛔ Human Approval Gate
+
+**CRITICAL: The AI agent MUST NOT write or modify code without explicit verbal approval.**
+
+- Every proposed change must be **described in natural language first**
+- The engineer reviews, approves, adjusts, or rejects before any code is written
+- This prevents AI-slop and ensures every line of code is intentional
+
+---
+
+## 🧭 Core Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **Business-first** | Focus on flows that impact revenue and user experience — booking, payments, availability |
+| **Happy + Negative** | Every feature covers success paths AND failure/edge scenarios |
+| **Explicit validation** | Validate error messages explicitly — don't assume generic checks are enough |
+| **No redundancy** | Avoid overlapping test coverage — each test must add unique value |
+| **Maintainability > Quantity** | Fewer well-structured tests beat many fragile ones |
+
+## 📊 Methodology — Equivalence Class Partitioning + BVA
+
+### Equivalence Class Partitioning (ECP)
+- Group inputs into **equivalence classes**: valid, invalid-empty, invalid-below-min, invalid-above-max
+- Select **one representative value** per class — reduces redundant tests
+- Goal: minimize test count while maximizing defect detection
+
+### Boundary Value Analysis (BVA)
+- Within each equivalence class, test at **exact boundaries**: minimum, maximum, below-min, above-max
+- Comment character lengths next to every fixture field for traceability
+- Each boundary is a separate test case
+
+### Combined Strategy
+- ECP defines **which classes** to test → BVA defines **which values** within each class
+- Result: minimum number of tests with maximum validation coverage
+
+## 🐛 Bug Discovery Strategy
+
+- Use `test.fail()` to document known application bugs
+- Write tests asserting **ideal behavior** — when bugs are fixed, tests auto-pass
+- Never skip bugs — `test.fail()` keeps the pipeline green while documenting the defect
+
+## 📱 Multi-Viewport Coverage
+
+- Test critical flows on **desktop, tablet, and mobile** viewports
+- Use `test.fail()` with viewport conditions for responsive bugs (e.g. `BUG-014`)
+- Visual regression tests target **desktop only** (stable baseline environment)
+
+## 🏗️ Architecture Alignment
+
+- **API tests**: `request` fixture, Zod schemas, factory fixtures
+- **UI tests**: Page Object Model, `readyLocator` pattern, no selectors in specs
+- **Shared**: Types in `tests/types/`, fixtures in `tests/fixtures/`, config in `tests/config/`
