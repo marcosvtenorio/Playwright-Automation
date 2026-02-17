@@ -4,6 +4,8 @@
 
 This project implements **77 automated tests** (17 API + 60 UI) across **4 viewports** using Playwright and TypeScript. Tests follow **Equivalence Class Partitioning + Boundary Value Analysis (ECP/BVA)** methodology with business-impact prioritization. **14 application bugs** were discovered and documented using `test.fail()` — each test asserts the ideal behavior, so bug fixes are automatically detected. The entire development workflow was AI-assisted using **Cursor IDE + Playwright MCP** for live application discovery, test generation, and debugging.
 
+📹 **[Video Walkthrough](https://www.loom.com/share/cc277ec56f744b3a895b228577d7adc7)** — Brief explanation of the solution and test execution demo
+
 ---
 
 ## 📋 Table of Contents
@@ -14,10 +16,10 @@ This project implements **77 automated tests** (17 API + 60 UI) across **4 viewp
 4. [Test Coverage](#-test-coverage)
 5. [Bug Discovery](#-bug-discovery)
 6. [Architecture Decisions](#-architecture-decisions)
-7. [Environment Setup — MCP & Cursor Rules](#-environment-setup--mcp--cursor-rules)
+7. [Environment Setup — MCP &amp; Cursor Rules](#-environment-setup--mcp--cursor-rules)
 8. [AI-Assisted Development](#-ai-assisted-development)
-9. [CI/CD & Docker](#-cicd--docker)
-10. [Trade-offs & Known Limitations](#-trade-offs--known-limitations)
+9. [CI/CD &amp; Docker](#-cicd--docker)
+10. [Trade-offs &amp; Known Limitations](#-trade-offs--known-limitations)
 11. [Future Work](#-future-work)
 
 ---
@@ -31,14 +33,14 @@ This project implements **77 automated tests** (17 API + 60 UI) across **4 viewp
 
 > **Environment variables**: No `.env` file is required. All defaults are built into `tests/config/env.ts`. To override, create a `.env` at the project root:
 >
-> | Variable | Default | Description |
-> |----------|---------|-------------|
-> | `API_BASE_URL` | `https://restful-booker.herokuapp.com` | API target |
-> | `UI_BASE_URL` | `https://automationintesting.online` | UI target |
-> | `API_AUTH_USERNAME` | `admin` | API admin credentials |
-> | `API_AUTH_PASSWORD` | `password123` | API admin credentials |
-> | `UI_ADMIN_USERNAME` | `admin` | UI admin credentials |
-> | `UI_ADMIN_PASSWORD` | `password` | UI admin credentials |
+> | Variable              | Default                                  | Description           |
+> | --------------------- | ---------------------------------------- | --------------------- |
+> | `API_BASE_URL`      | `https://restful-booker.herokuapp.com` | API target            |
+> | `UI_BASE_URL`       | `https://automationintesting.online`   | UI target             |
+> | `API_AUTH_USERNAME` | `admin`                                | API admin credentials |
+> | `API_AUTH_PASSWORD` | `password123`                          | API admin credentials |
+> | `UI_ADMIN_USERNAME` | `admin`                                | UI admin credentials  |
+> | `UI_ADMIN_PASSWORD` | `password`                             | UI admin credentials  |
 
 ### Local Setup
 
@@ -141,15 +143,15 @@ postman/
 
 Tests were prioritized by **revenue impact** — what breaks if this fails?
 
-| Priority | Area | Rationale |
-|----------|------|-----------|
-| 🔴 Critical | Booking creation (API + UI) | Broken bookings = lost revenue |
-| 🔴 Critical | Authentication | No auth = no admin access |
-| 🟡 High | Form validation | Bad data = corrupted bookings |
-| 🟡 High | Availability search | Wrong dates = wrong rooms shown |
-| 🟢 Medium | Admin dashboard | Internal tool, not customer-facing |
-| 🟢 Medium | Responsive layout | Mobile users can't book |
-| 🔵 Low | Visual regression | CSS regressions, brand consistency |
+| Priority    | Area                        | Rationale                          |
+| ----------- | --------------------------- | ---------------------------------- |
+| 🔴 Critical | Booking creation (API + UI) | Broken bookings = lost revenue     |
+| 🔴 Critical | Authentication              | No auth = no admin access          |
+| 🟡 High     | Form validation             | Bad data = corrupted bookings      |
+| 🟡 High     | Availability search         | Wrong dates = wrong rooms shown    |
+| 🟢 Medium   | Admin dashboard             | Internal tool, not customer-facing |
+| 🟢 Medium   | Responsive layout           | Mobile users can't book            |
+| 🔵 Low      | Visual regression           | CSS regressions, brand consistency |
 
 ### Testing Approach
 
@@ -160,11 +162,11 @@ Tests were prioritized by **revenue impact** — what breaks if this fails?
 
 ### Multi-Viewport Testing
 
-| Project | Viewport | Scope |
-|---------|----------|-------|
+| Project        | Viewport  | Scope                            |
+| -------------- | --------- | -------------------------------- |
 | `ui-desktop` | 1280×720 | All UI tests + visual regression |
-| `ui-tablet` | 768×1024 | Responsive + functional tests |
-| `ui-mobile` | 375×667 | Responsive + functional tests |
+| `ui-tablet`  | 768×1024 | Responsive + functional tests    |
+| `ui-mobile`  | 375×667  | Responsive + functional tests    |
 
 ---
 
@@ -172,29 +174,29 @@ Tests were prioritized by **revenue impact** — what breaks if this fails?
 
 ### Test Map
 
-| Layer | Prefix | Range | Spec File | Tests | Scope |
-|-------|--------|-------|-----------|-------|-------|
-| **API** | `AU` | AU01–AU02 | `auth.spec.ts` | 2 | Authentication — valid/invalid credentials, token generation |
-| **API** | `BK` | BK01–BK13 | `booking.spec.ts` | 13 | Booking CRUD — create, read, update, delete with ECP/BVA |
-| **API** | `LC` | LC01–LC02 | `booking.lifecycle.spec.ts` | 2 | End-to-end lifecycle — create → read → update → delete |
-| **UI** | `BF` | BF01–BF08 | `booking-flow.spec.ts` | 8 | Home page structure — navbar, hero, rooms, booking widget, footer |
-| **UI** | `CA` | CA01–CA05 | `check-availability.spec.ts` | 5 | Availability widget — date selection, API integration, edge cases |
-| **UI** | `CT` | CT01–CT06 | `form-validation.spec.ts` | 6 | Contact form validation — ECP/BVA on name, email, phone, message |
-| **UI** | `RF` | RF01–RF09 | `reservation-form.spec.ts` | 9 | Room booking flow — reservation form ECP/BVA + date conflict |
-| **UI** | `AD` | AD01–AD16 | `admin-dashboard.spec.ts` | 16 | Admin panel — room CRUD, branding, messages, reports, navigation |
-| **UI** | `AD` | AD01–AD05 | `admin-flow.spec.ts` | 5 | Admin login/logout — credentials, session management |
-| **UI** | `RS` | RS01–RS06 | `responsive.spec.ts` | 6 | Responsive layout — viewport adaptation (mobile, tablet, desktop) |
-| **UI** | `VR` | VR01–VR05 | `visual-regression.spec.ts` | 5 | Visual regression — component-level screenshot baselines (desktop) |
-| | | | | **77 total** | |
+| Layer         | Prefix | Range      | Spec File                      | Tests              | Scope                                                               |
+| ------------- | ------ | ---------- | ------------------------------ | ------------------ | ------------------------------------------------------------------- |
+| **API** | `AU` | AU01–AU02 | `auth.spec.ts`               | 2                  | Authentication — valid/invalid credentials, token generation       |
+| **API** | `BK` | BK01–BK13 | `booking.spec.ts`            | 13                 | Booking CRUD — create, read, update, delete with ECP/BVA           |
+| **API** | `LC` | LC01–LC02 | `booking.lifecycle.spec.ts`  | 2                  | End-to-end lifecycle — create → read → update → delete          |
+| **UI**  | `BF` | BF01–BF08 | `booking-flow.spec.ts`       | 8                  | Home page structure — navbar, hero, rooms, booking widget, footer  |
+| **UI**  | `CA` | CA01–CA05 | `check-availability.spec.ts` | 5                  | Availability widget — date selection, API integration, edge cases  |
+| **UI**  | `CT` | CT01–CT06 | `form-validation.spec.ts`    | 6                  | Contact form validation — ECP/BVA on name, email, phone, message   |
+| **UI**  | `RF` | RF01–RF09 | `reservation-form.spec.ts`   | 9                  | Room booking flow — reservation form ECP/BVA + date conflict       |
+| **UI**  | `AD` | AD01–AD16 | `admin-dashboard.spec.ts`    | 16                 | Admin panel — room CRUD, branding, messages, reports, navigation   |
+| **UI**  | `AD` | AD01–AD05 | `admin-flow.spec.ts`         | 5                  | Admin login/logout — credentials, session management               |
+| **UI**  | `RS` | RS01–RS06 | `responsive.spec.ts`         | 6                  | Responsive layout — viewport adaptation (mobile, tablet, desktop)  |
+| **UI**  | `VR` | VR01–VR05 | `visual-regression.spec.ts`  | 5                  | Visual regression — component-level screenshot baselines (desktop) |
+|               |        |            |                                | **77 total** |                                                                     |
 
 ### Test Distribution by Viewport
 
-| Project | Test Count |
-|---------|-----------|
-| API | 17 |
-| UI Desktop | 49 |
-| UI Tablet | 50 |
-| UI Mobile | 50 |
+| Project                    | Test Count    |
+| -------------------------- | ------------- |
+| API                        | 17            |
+| UI Desktop                 | 49            |
+| UI Tablet                  | 50            |
+| UI Mobile                  | 50            |
 | **Total executions** | **166** |
 
 ---
@@ -205,27 +207,27 @@ Tests were prioritized by **revenue impact** — what breaks if this fails?
 
 ### API Bugs
 
-| ID | Endpoint | Expected | Actual | Severity |
-|----|----------|----------|--------|----------|
-| BUG-001 | `POST /booking` | 201 Created | 200 OK | Medium — Wrong status code, violates REST standards |
-| BUG-002 | `POST /booking` | 400 Bad Request (empty fields) | 200 OK | High — Accepts bookings with empty names |
-| BUG-003 | `POST /booking` | 400 Bad Request (negative price) | 200 OK | High — Accepts negative prices |
-| BUG-004 | `POST /booking` | 400 Bad Request (invalid dates) | 200 OK | High — Accepts checkout before checkin |
-| BUG-005 | `PUT /booking/:id` | 400 Bad Request (invalid data) | 200 OK | High — Updates with invalid data |
-| BUG-006 | `PUT /booking/:id` | 400 Bad Request (invalid data) | 200 OK | High — No server-side validation on update |
-| BUG-007 | `POST /auth` | 401 Unauthorized | 200 OK | Medium — Wrong status code for invalid credentials |
-| BUG-008 | `DELETE /booking/:id` | 200/204 | 201 Created | Low — Semantically wrong status for deletion |
+| ID      | Endpoint                | Expected                         | Actual      | Severity                                             |
+| ------- | ----------------------- | -------------------------------- | ----------- | ---------------------------------------------------- |
+| BUG-001 | `POST /booking`       | 201 Created                      | 200 OK      | Medium — Wrong status code, violates REST standards |
+| BUG-002 | `POST /booking`       | 400 Bad Request (empty fields)   | 200 OK      | High — Accepts bookings with empty names            |
+| BUG-003 | `POST /booking`       | 400 Bad Request (negative price) | 200 OK      | High — Accepts negative prices                      |
+| BUG-004 | `POST /booking`       | 400 Bad Request (invalid dates)  | 200 OK      | High — Accepts checkout before checkin              |
+| BUG-005 | `PUT /booking/:id`    | 400 Bad Request (invalid data)   | 200 OK      | High — Updates with invalid data                    |
+| BUG-006 | `PUT /booking/:id`    | 400 Bad Request (invalid data)   | 200 OK      | High — No server-side validation on update          |
+| BUG-007 | `POST /auth`          | 401 Unauthorized                 | 200 OK      | Medium — Wrong status code for invalid credentials  |
+| BUG-008 | `DELETE /booking/:id` | 200/204                          | 201 Created | Low — Semantically wrong status for deletion        |
 
 ### UI Bugs
 
-| ID | Component | Expected | Actual | Severity |
-|----|-----------|----------|--------|----------|
-| BUG-009 | Booking form validation | Error messages reference field names | Generic messages without field context | Medium |
-| BUG-010 | Booking form (409 conflict) | User-friendly error message | Frontend crashes with TypeError | Critical |
-| BUG-011 | Availability widget | Reject checkout before checkin | Accepts invalid date ranges | High |
-| BUG-012 | Availability widget | Disable past dates | Allows searching past dates | Medium |
-| BUG-013 | Date handling | Correct date conversion | UTC conversion adds +1 day (timezone bug) | High |
-| BUG-014 | Admin hamburger menu | Menu expands on mobile/tablet | Menu remains collapsed, nav inaccessible | High |
+| ID      | Component                   | Expected                             | Actual                                    | Severity |
+| ------- | --------------------------- | ------------------------------------ | ----------------------------------------- | -------- |
+| BUG-009 | Booking form validation     | Error messages reference field names | Generic messages without field context    | Medium   |
+| BUG-010 | Booking form (409 conflict) | User-friendly error message          | Frontend crashes with TypeError           | Critical |
+| BUG-011 | Availability widget         | Reject checkout before checkin       | Accepts invalid date ranges               | High     |
+| BUG-012 | Availability widget         | Disable past dates                   | Allows searching past dates               | Medium   |
+| BUG-013 | Date handling               | Correct date conversion              | UTC conversion adds +1 day (timezone bug) | High     |
+| BUG-014 | Admin hamburger menu        | Menu expands on mobile/tablet        | Menu remains collapsed, nav inaccessible  | High     |
 
 ---
 
@@ -357,10 +359,10 @@ A key part of managing the AI agent was **constraining its behavior** through Cu
 
 Three rules files were maintained throughout development (available in `rules-used/`):
 
-| Rule File | Purpose |
-|-----------|---------|
-| `playwright.mdc` | POM architecture, assertions, locator strategy, SPA navigation patterns |
-| `api-tests.mdc` | Request fixture, Zod schemas, cleanup strategy, AAA pattern |
+| Rule File                | Purpose                                                                 |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `playwright.mdc`       | POM architecture, assertions, locator strategy, SPA navigation patterns |
+| `api-tests.mdc`        | Request fixture, Zod schemas, cleanup strategy, AAA pattern             |
 | `testing-strategy.mdc` | Business-first prioritization, BVA methodology, multi-viewport coverage |
 
 **Impact**: Without these rules, the AI would default to verbose, inconsistent code. With them, ~90% of generated code required only minor adjustments instead of rewrites.
@@ -439,13 +441,13 @@ The AI identified that `waitForPageLoad` using `domcontentloaded` was insufficie
 
 ### What the AI Got Wrong
 
-| Issue | What AI Did | What I Corrected |
-|-------|-------------|------------------|
-| Over-engineered refactor of AdminDashboardPage | Proposed full rewrite (225→155 lines) | Asked for minimal fix — only changed `readyLocator` |
-| Low-level waits leaked into tests | Put `scrollIntoViewIfNeeded()` + `waitFor()` in spec | Moved to PO method `scrollToSimilarRooms()` |
-| `Promise.all` for SPA navigation | Used `Promise.all([waitForURL, click])` | Changed to sequential click → waitForURL (SPA uses pushState) |
-| `.catch(() => {})` in waitForDashboardLoad | Silently swallowed timeout errors | Replaced with `waitForLoadState('networkidle')` |
-| Aggressive VRT threshold | `maxDiffPixelRatio: 0.01` (1%) | Increased to `0.05` (5%) — realistic for external app |
+| Issue                                          | What AI Did                                              | What I Corrected                                               |
+| ---------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| Over-engineered refactor of AdminDashboardPage | Proposed full rewrite (225→155 lines)                   | Asked for minimal fix — only changed `readyLocator`         |
+| Low-level waits leaked into tests              | Put `scrollIntoViewIfNeeded()` + `waitFor()` in spec | Moved to PO method `scrollToSimilarRooms()`                  |
+| `Promise.all` for SPA navigation             | Used `Promise.all([waitForURL, click])`                | Changed to sequential click → waitForURL (SPA uses pushState) |
+| `.catch(() => {})` in waitForDashboardLoad   | Silently swallowed timeout errors                        | Replaced with `waitForLoadState('networkidle')`              |
+| Aggressive VRT threshold                       | `maxDiffPixelRatio: 0.01` (1%)                         | Increased to `0.05` (5%) — realistic for external app       |
 
 ### What I Learned
 
@@ -487,26 +489,26 @@ FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 ### Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm test` | Run all tests |
-| `npm run test:api` | API tests only |
-| `npm run test:ui` | UI desktop only |
+| Command                 | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `npm test`            | Run all tests                             |
+| `npm run test:api`    | API tests only                            |
+| `npm run test:ui`     | UI desktop only                           |
 | `npm run test:ui:all` | All viewports (desktop + tablet + mobile) |
-| `npm run test:headed` | UI tests with visible browser |
-| `npm run docker:test` | Run all tests in Docker |
-| `npm run docker:api` | API tests in Docker |
-| `npm run docker:ui` | UI tests in Docker |
+| `npm run test:headed` | UI tests with visible browser             |
+| `npm run docker:test` | Run all tests in Docker                   |
+| `npm run docker:api`  | API tests in Docker                       |
+| `npm run docker:ui`   | UI tests in Docker                        |
 
 ### Postman Collections
 
 The `postman/` folder contains ready-to-import collections for manual API exploration:
 
-| File | Purpose |
-|------|---------|
+| File                                | Purpose                                                                                 |
+| ----------------------------------- | --------------------------------------------------------------------------------------- |
 | `Restful_Booker_Environment.json` | Environment with `base_url`, credentials, and auto-populated `token`/`booking_id` |
-| `Restful_Booker_By_Endpoint.json` | Organized by REST resource (Auth, Health, Booking CRUD) |
-| `Restful_Booker_By_Test.json` | Maps 1:1 to Playwright test IDs (AU01–AU02, BK01–BK13, LC01–LC02) |
+| `Restful_Booker_By_Endpoint.json` | Organized by REST resource (Auth, Health, Booking CRUD)                                 |
+| `Restful_Booker_By_Test.json`     | Maps 1:1 to Playwright test IDs (AU01–AU02, BK01–BK13, LC01–LC02)                    |
 
 Import all three into Postman, select the **Restful Booker** environment, and run. Test scripts document known bugs inline (e.g. `BUG-001: should be 201`).
 
@@ -516,21 +518,21 @@ Import all three into Postman, select the **Restful Booker** environment, and ru
 
 ### Deliberate Trade-offs
 
-| Decision | Trade-off | Rationale |
-|----------|-----------|-----------|
-| Visual regression on desktop only | No mobile/tablet baselines | Cost of maintaining 3× baselines on external app outweighs incremental coverage. Responsive behavior is covered by functional tests in `responsive.spec.ts` |
-| `maxDiffPixelRatio: 0.05` for VRT | Allows 5% pixel difference | External app — 1% threshold is unrealistic due to scrollbar variance, font rendering, and dynamic content |
-| `networkidle` for admin dashboard | Slower than targeted waits | The admin dashboard makes multiple API calls on load; `networkidle` reliably ensures React hydration is complete |
-| Shared public test environment | Possible inter-user conflicts | No isolated environment available; tests use dynamic date generation (unique month offsets) to minimize collisions |
-| `test.fail()` over `test.skip()` | Tests run and fail (expected) | Documents the ideal behavior and auto-detects fixes, vs. `skip` which is invisible and forgotten |
+| Decision                             | Trade-off                     | Rationale                                                                                                                                                      |
+| ------------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visual regression on desktop only    | No mobile/tablet baselines    | Cost of maintaining 3× baselines on external app outweighs incremental coverage. Responsive behavior is covered by functional tests in `responsive.spec.ts` |
+| `maxDiffPixelRatio: 0.05` for VRT  | Allows 5% pixel difference    | External app — 1% threshold is unrealistic due to scrollbar variance, font rendering, and dynamic content                                                     |
+| `networkidle` for admin dashboard  | Slower than targeted waits    | The admin dashboard makes multiple API calls on load;`networkidle` reliably ensures React hydration is complete                                              |
+| Shared public test environment       | Possible inter-user conflicts | No isolated environment available; tests use dynamic date generation (unique month offsets) to minimize collisions                                             |
+| `test.fail()` over `test.skip()` | Tests run and fail (expected) | Documents the ideal behavior and auto-detects fixes, vs.`skip` which is invisible and forgotten                                                              |
 
 ### Not Implemented
 
-| Feature | Why |
-|---------|-----|
-| Agent-driven testing | Time constraint — prioritized functional coverage and bug discovery over an agent architecture |
-| Performance testing (k6/Artillery) | Out of scope — challenge focuses on functional testing |
-| Cross-browser testing | Chromium only — sufficient for the challenge; adding Firefox/WebKit would 3× execution time with minimal additional coverage |
+| Feature                            | Why                                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Agent-driven testing               | Time constraint — prioritized functional coverage and bug discovery over an agent architecture                                |
+| Performance testing (k6/Artillery) | Out of scope — challenge focuses on functional testing                                                                        |
+| Cross-browser testing              | Chromium only — sufficient for the challenge; adding Firefox/WebKit would 3× execution time with minimal additional coverage |
 
 ### What I Would Improve Given More Time
 
@@ -550,11 +552,11 @@ The `test.fail()` pattern creates a natural bridge to **autonomous bug lifecycle
 3. **Evaluates outcomes** — if a `test.fail()` test now passes ("expected failure but passed"), the agent confirms the fix is live
 4. **Handles disposition** — based on the CR resolution:
 
-| CR Resolution | Agent Action |
-|---------------|-------------|
-| **Fixed** | Remove `test.fail()`, test now asserts correct behavior permanently |
+| CR Resolution                   | Agent Action                                                                        |
+| ------------------------------- | ----------------------------------------------------------------------------------- |
+| **Fixed**                 | Remove `test.fail()`, test now asserts correct behavior permanently               |
 | **Won't Fix / By Design** | Update test expectations to match the new accepted behavior, remove `test.fail()` |
-| **Deferred** | Keep `test.fail()`, log that the bug remains open |
+| **Deferred**              | Keep `test.fail()`, log that the bug remains open                                 |
 
 5. **Creates a PR** — the agent commits the updated test files and opens a PR for human review
 
@@ -586,4 +588,3 @@ npx playwright test --project=ui-desktop --grep "VR" --update-snapshots
 # Debug mode (step-by-step)
 npx playwright test --debug --grep "BF01"
 ```
-
