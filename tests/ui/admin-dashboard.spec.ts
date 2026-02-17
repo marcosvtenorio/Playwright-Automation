@@ -80,6 +80,40 @@ test.describe('Admin Dashboard', () => {
       }).toPass({ timeout: 10000 });
     });
 
+    test('AD07 - valid: should navigate between admin tabs correctly', async ({ page }) => {
+      // BUG-014: Hamburger menu does not expand on mobile, preventing access to navigation tabs
+      // Expected: Hamburger menu should expand when clicked, making tabs accessible
+      // Remove test.fail() when BUG-014 is fixed
+      const viewport = page.viewportSize();
+      const isMobile = viewport ? viewport.width <= 375 && viewport.height <= 667 : false;
+      test.fail(isMobile, 'BUG-014');
+      const dashboard = new AdminDashboardPage(page);
+
+      // Test Rooms tab - uses navigateToRooms() which expands menu if needed
+      await dashboard.navigateToRooms();
+      await expect(page).toHaveURL(/\/admin\/rooms/);
+      const roomsPage = new AdminRoomsPage(page);
+      await expect(roomsPage.roomsContainer).toBeVisible();
+
+      // Test Report tab - uses navigateToReport() which expands menu if needed
+      await dashboard.navigateToReport();
+      await expect(page).toHaveURL(/\/admin\/report/);
+      const reportPage = new AdminReportPage(page);
+      await expect(reportPage.calendarTable).toBeVisible();
+
+      // Test Branding tab - uses navigateToBranding() which expands menu if needed
+      await dashboard.navigateToBranding();
+      await expect(page).toHaveURL(/\/admin\/branding/);
+      const brandingPage = new AdminBrandingPage(page);
+      await expect(brandingPage.submitButton).toBeVisible();
+
+      // Test Messages tab - uses navigateToMessages() which expands menu if needed
+      await dashboard.navigateToMessages();
+      await expect(page).toHaveURL(/\/admin\/message/);
+      const messagesPage = new AdminMessagesPage(page);
+      await expect(messagesPage.messagesList).toBeVisible();
+    });
+
     test('AD13 - invalid: should show validation errors when creating room with empty data', async ({ page }) => {
       const roomsPage = new AdminRoomsPage(page);
       await roomsPage.navigate();
@@ -132,50 +166,6 @@ test.describe('Admin Dashboard', () => {
       const alertText = await roomsPage.getAlertMessage();
       expect(alertText).toBeTruthy();
       expect(alertText!.toLowerCase()).toMatch(/room name|must be set|required/i);
-    });
-
-    test('AD07 - valid: should navigate between admin tabs correctly', async ({ page }) => {
-      const dashboard = new AdminDashboardPage(page);
-
-      // Test Rooms tab - click directly on tab
-      await expect(dashboard.roomsTab).toBeVisible();
-      await Promise.all([
-        page.waitForURL(/\/admin\/rooms/, { timeout: 10000 }),
-        dashboard.roomsTab.click(),
-      ]);
-      await expect(page).toHaveURL(/\/admin\/rooms/);
-      const roomsPage = new AdminRoomsPage(page);
-      await expect(roomsPage.roomsContainer).toBeVisible();
-
-      // Test Report tab - click directly on tab
-      await expect(dashboard.reportTab).toBeVisible();
-      await Promise.all([
-        page.waitForURL(/\/admin\/report/, { timeout: 10000 }),
-        dashboard.reportTab.click(),
-      ]);
-      await expect(page).toHaveURL(/\/admin\/report/);
-      const reportPage = new AdminReportPage(page);
-      await expect(reportPage.calendarTable).toBeVisible();
-
-      // Test Branding tab - click directly on tab
-      await expect(dashboard.brandingTab).toBeVisible();
-      await Promise.all([
-        page.waitForURL(/\/admin\/branding/, { timeout: 10000 }),
-        dashboard.brandingTab.click(),
-      ]);
-      await expect(page).toHaveURL(/\/admin\/branding/);
-      const brandingPage = new AdminBrandingPage(page);
-      await expect(brandingPage.submitButton).toBeVisible();
-
-      // Test Messages tab - click directly on tab
-      await expect(dashboard.messagesTab).toBeVisible();
-      await Promise.all([
-        page.waitForURL(/\/admin\/message/, { timeout: 10000 }),
-        dashboard.messagesTab.click(),
-      ]);
-      await expect(page).toHaveURL(/\/admin\/message/);
-      const messagesPage = new AdminMessagesPage(page);
-      await expect(messagesPage.messagesList).toBeVisible();
     });
   });
 

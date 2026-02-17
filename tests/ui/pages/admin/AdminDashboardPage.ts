@@ -51,12 +51,36 @@ export class AdminDashboardPage extends BasePage {
 
   /** Navigate to Rooms tab */
   async navigateToRooms(): Promise<void> {
+    // Wait for dashboard to fully load before attempting navigation
+    await this.waitForDashboardLoad();
+    // Expand menu if needed (mobile/tablet) before clicking tab
+    await this.expandHamburgerMenuIfNeeded();
+    // Verify tab is accessible before attempting to click (fails fast if menu didn't expand)
+    const isTabVisible = await this.roomsTab.isVisible({ timeout: 2000 }).catch(() => false);
+    if (!isTabVisible) {
+      throw new Error(
+        'Rooms tab is not accessible. Hamburger menu may not have expanded (BUG-014). ' +
+        'Tab exists in DOM but is not visible.'
+      );
+    }
     await this.roomsTab.click();
     await this.page.waitForURL(/\/admin\/rooms/, { timeout: 5000 });
   }
 
   /** Navigate to Report tab */
   async navigateToReport(): Promise<void> {
+    // Wait for dashboard to fully load before attempting navigation
+    await this.waitForDashboardLoad();
+    // Expand menu if needed (mobile/tablet) before clicking tab
+    await this.expandHamburgerMenuIfNeeded();
+    // Verify tab is accessible before attempting to click (fails fast if menu didn't expand)
+    const isTabVisible = await this.reportTab.isVisible({ timeout: 2000 }).catch(() => false);
+    if (!isTabVisible) {
+      throw new Error(
+        'Report tab is not accessible. Hamburger menu may not have expanded (BUG-014). ' +
+        'Tab exists in DOM but is not visible.'
+      );
+    }
     // Use Promise.all to click and wait for navigation simultaneously
     await Promise.all([
       this.page.waitForURL(/\/admin\/report/, { timeout: 10000 }),
@@ -68,18 +92,44 @@ export class AdminDashboardPage extends BasePage {
 
   /** Navigate to Branding tab */
   async navigateToBranding(): Promise<void> {
+    // Wait for dashboard to fully load before attempting navigation
+    await this.waitForDashboardLoad();
+    // Expand menu if needed (mobile/tablet) before clicking tab
+    await this.expandHamburgerMenuIfNeeded();
+    // Verify tab is accessible before attempting to click (fails fast if menu didn't expand)
+    const isTabVisible = await this.brandingTab.isVisible({ timeout: 2000 }).catch(() => false);
+    if (!isTabVisible) {
+      throw new Error(
+        'Branding tab is not accessible. Hamburger menu may not have expanded (BUG-014). ' +
+        'Tab exists in DOM but is not visible.'
+      );
+    }
     await this.brandingTab.click();
     await this.page.waitForURL(/\/admin\/branding/, { timeout: 5000 });
   }
 
   /** Navigate to Messages tab */
   async navigateToMessages(): Promise<void> {
+    // Wait for dashboard to fully load before attempting navigation
+    await this.waitForDashboardLoad();
+    // Expand menu if needed (mobile/tablet) before clicking tab
+    await this.expandHamburgerMenuIfNeeded();
+    // Verify tab is accessible before attempting to click (fails fast if menu didn't expand)
+    const isTabVisible = await this.messagesTab.isVisible({ timeout: 2000 }).catch(() => false);
+    if (!isTabVisible) {
+      throw new Error(
+        'Messages tab is not accessible. Hamburger menu may not have expanded (BUG-014). ' +
+        'Tab exists in DOM but is not visible.'
+      );
+    }
     await this.messagesTab.click();
     await this.page.waitForURL(/\/admin\/message/, { timeout: 5000 });
   }
 
   /** Logout and return to home page */
   async logout(): Promise<void> {
+    // Wait for dashboard to fully load before attempting logout
+    await this.waitForDashboardLoad();
     // Expand menu if needed (mobile/tablet) before clicking logout
     await this.expandHamburgerMenuIfNeeded();
 
@@ -99,6 +149,22 @@ export class AdminDashboardPage extends BasePage {
   }
 
   // ─── Private Helpers ─────────────────────────────────────
+
+  /**
+   * Wait for dashboard page to fully load.
+   * Ensures "Loading..." state is gone and page content is rendered.
+   * This is dashboard-specific loading logic, different from base page load.
+   */
+  private async waitForDashboardLoad(): Promise<void> {
+    // Wait for loading indicator to disappear
+    const loadingIndicator = this.page.locator('text=Loading...');
+    await loadingIndicator.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
+      // If loading indicator doesn't exist or already gone, continue
+    });
+
+    // Wait for page to be in a stable state (use base class method)
+    await super.waitForPageLoad();
+  }
 
   /**
    * Expand hamburger menu if visible and collapsed (mobile/tablet responsive behavior).

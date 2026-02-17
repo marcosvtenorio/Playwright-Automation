@@ -16,7 +16,7 @@ const sharedUiUse = {
   },
 } as const;
 
-const responsiveTestMatch = ['**/responsive.spec.ts', '**/form-validation.spec.ts', '**/booking-flow.spec.ts', '**/check-availability.spec.ts', '**/reservation-form.spec.ts', 'admin-flow.spec.ts'];
+const responsiveTestMatch = ['**/responsive.spec.ts', '**/form-validation.spec.ts', '**/booking-flow.spec.ts', '**/check-availability.spec.ts', '**/reservation-form.spec.ts', 'admin-flow.spec.ts', 'admin-dashboard.spec.ts'];
 
 export default defineConfig({
   testDir: './tests',
