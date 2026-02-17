@@ -9,7 +9,7 @@ import {
   createAboveMaxReservation,
   createInvalidEmailReservation,
 } from '../fixtures/booking.data.js';
-import { BookingResponse } from '@tests/types/booking.types.js';
+import { BookingCreateResponse } from '@tests/types/booking.types.js';
 
 /**
  * Reservation Form Tests
@@ -83,7 +83,7 @@ test.describe('Reservation Form', () => {
 
     expect(apiResponse.status()).toBe(201);
 
-    const body = await apiResponse.json() as BookingResponse;
+    const body = await apiResponse.json() as BookingCreateResponse;
 
     // Verify confirmation screen
     await expect(bookingPage.confirmationHeading).toBeVisible({ timeout: 10000 });
@@ -121,7 +121,7 @@ test.describe('Reservation Form', () => {
     await expect(bookingPage.confirmationHeading).toBeVisible({ timeout: 10000 });
 
     // Cleanup
-    const body = await apiResponse.json() as BookingResponse;
+    const body = await apiResponse.json() as BookingCreateResponse;
     await deleteBooking(request, body.bookingid);
   });
 
@@ -149,7 +149,7 @@ test.describe('Reservation Form', () => {
     await expect(bookingPage.confirmationHeading).toBeVisible({ timeout: 10000 });
 
     // Cleanup
-    const body = await apiResponse.json() as BookingResponse;
+    const body = await apiResponse.json() as BookingCreateResponse;
     await deleteBooking(request, body.bookingid);
   });
 
